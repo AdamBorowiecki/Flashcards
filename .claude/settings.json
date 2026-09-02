@@ -1,0 +1,54 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git status *)",
+      "Bash(git branch *)",
+      "Bash(git checkout *)",
+      "Bash(git stash *)",
+      "Read",
+      "Edit",
+      "Write",
+      "Bash(git -C \"C:\\\\Users\\\\adamb\\\\source\\\\repos\\\\Flashcards\" log --oneline --all)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\adamb\\\\source\\\\repos\\\\Flashcards\\\\.github\\\\workflows\" -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object Name)",
+      "Bash(where gh *)",
+      "Bash(cmd /c \"dir *\")",
+      "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(find *)",
+      "Bash(grep *)",
+      "Bash(echo *)",
+      "Bash(type *)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)"
+    ],
+    "ask": [
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(git push *)",
+      "Bash(git push)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{try{const o=JSON.parse(d);const f=o.tool_input&&o.tool_input.file_path;if(f){require('child_process').execSync('npx prettier --write '+JSON.stringify(f)+' --ignore-unknown',{stdio:'inherit'});}else{process.exit(0);}}catch(e){process.exit(0);}});\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}
