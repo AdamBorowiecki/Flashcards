@@ -59,7 +59,7 @@ CI reads these from repository secrets.
 
 ## Branch Convention
 
-Default branch is `master` (not `main`). CI triggers on push to `master` and PRs targeting `master`.
+Default branch is `main`. CI triggers on push to `main` and PRs targeting `main`.
 
 ## Line Endings
 
