@@ -275,27 +275,27 @@ Local and cloud stay aligned because Phase 2 applies the migration locally and P
 
 #### Automated
 
-- [x] 1.1 A file matching `supabase/migrations/*_create_cards_table.sql` exists
-- [x] 1.2 Build still passes: `npm run build`
+- [x] 1.1 A file matching `supabase/migrations/*_create_cards_table.sql` exists — 6815f1d
+- [x] 1.2 Build still passes: `npm run build` — 6815f1d
 
 #### Manual
 
-- [x] 1.3 The migration contains no scheduling-state column beyond `next_review_at`
-- [x] 1.4 All four policies are present and keyed on `auth.uid() = user_id`
-- [x] 1.5 The grant, `enable row level security`, and the four policies are all in the same migration file
+- [x] 1.3 The migration contains no scheduling-state column beyond `next_review_at` — 6815f1d
+- [x] 1.4 All four policies are present and keyed on `auth.uid() = user_id` — 6815f1d
+- [x] 1.5 The grant, `enable row level security`, and the four policies are all in the same migration file — 6815f1d
 
 ### Phase 2: Apply and verify locally
 
 #### Automated
 
-- [ ] 2.1 `npx supabase db reset` applies the migration with no error
-- [ ] 2.2 `npx supabase migration list` shows the migration applied locally
-- [ ] 2.3 The RLS script runs to completion with no exception raised
+- [x] 2.1 `npx supabase db reset` applies the migration with no error — e96c447
+- [x] 2.2 `npx supabase migration list` shows the migration applied locally — e96c447
+- [x] 2.3 The RLS script runs to completion with no exception raised — e96c447
 
 #### Manual
 
-- [ ] 2.4 The positive assertion — learner A sees exactly their own row — passed
-- [ ] 2.5 `npx supabase status` confirms the script ran against the local stack
+- [x] 2.4 The positive assertion — learner A sees exactly their own row — passed — e96c447
+- [x] 2.5 `npx supabase status` confirms the script ran against the local stack — e96c447
 
 ### Phase 3: Push to cloud and record reality
 
