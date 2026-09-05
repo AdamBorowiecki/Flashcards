@@ -56,7 +56,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Backend / API:** partial — Astro server endpoints exist, but only for authentication (`src/pages/api/auth/{signin,signout,signup}.ts`). No domain endpoints yet.
 - **Data:** absent — `supabase/` holds only `config.toml` and `.gitignore`. No migrations, no schema, no card storage, no row-level access policies.
 - **Auth:** present — Supabase SSR client (`src/lib/supabase.ts`), email + password sign-up / sign-in / sign-out, confirm-email page, and route-guard middleware redirecting unauthenticated visitors (`src/middleware.ts:4,19-24`). Satisfies PRD §Access Control.
-- **Deploy / infra:** present — Cloudflare Workers, live and manually verified 2026-08-31 (`context/changes/deployment/resume-checklist.md:345`). `wrangler.jsonc` configured; `.github/workflows/ci.yml` lints and builds on `master` but deliberately does not deploy.
+- **Deploy / infra:** present — Cloudflare Workers, live and manually verified 2026-08-31 (`context/changes/deployment/resume-checklist.md:345`). `wrangler.jsonc` configured; `.github/workflows/ci.yml` lints and builds on `main` but deliberately does not deploy.
 - **Observability:** partial — Cloudflare Workers observability enabled (`wrangler.jsonc`). No application-level error tracking or structured logging anywhere in `src/`.
 
 ## Foundations
