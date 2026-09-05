@@ -3,8 +3,8 @@ project: flashcards
 version: 1
 status: draft
 created: 2026-09-03
-updated: 2026-09-03
-prd_version: 1
+updated: 2026-09-05
+prd_version: 2
 main_goal: low-complexity
 top_blocker: time
 milestone_id: working-srs-loop
@@ -70,8 +70,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Prerequisites:** —
 - **Parallel with:** —
 - **Blockers:** —
-- **Unknowns:**
-  - Which fields the scheduler needs on the card record beyond the next-due timestamp — see Open Roadmap Question 5. Owner: user. Block: no.
+- **Unknowns:** — (resolved 2026-09-05: Open Roadmap Question 5 settled on a step-ladder scheme, so the card record carries a step index alongside the next-due timestamp.)
 - **Risk:** Sequenced first because per-learner isolation is the one property in this milestone that cannot be retrofitted safely — every later slice reads and writes cards, and a missed ownership rule leaks one learner's deck to another. Kept deliberately narrow: one card record and its access rule, not a general data layer. The failure mode to watch is scope creep into review history, statistics tables, or deck grouping that no must-have requirement asks for.
 - **Status:** ready
 
@@ -98,8 +97,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Prerequisites:** F-01, S-01
 - **Parallel with:** S-04
 - **Blockers:** —
-- **Unknowns:**
-  - Which scheduling scheme sets the next due date — see Open Roadmap Question 5. Owner: user. Block: no; the PRD constrains only the ordering between the three ratings, and any interval scheme that respects it satisfies the requirement.
+- **Unknowns:** — (resolved 2026-09-05: Open Roadmap Question 5 settled the scheduling scheme; see that entry for the rule this slice implements.)
 - **Risk:** This is the slice the whole milestone exists to deliver, so it is placed as early as its Prerequisites allow. The scheduling rule lives here rather than in a separate foundation, because pulling it out ahead of the interface that exercises it would build a rule with nothing to check it against. The ordering guarantee between the three ratings needs an executable check inside this slice — the PRD calls a violation fatal to the product, and it is not visible by eye during a manual click-through.
 - **Status:** proposed
 
@@ -144,7 +142,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 2. **Expected requests-per-second load?** — Owner: user. Block: no (small scale assumed). Carried from PRD Open Question 2; already absorbed by the platform decision in `infrastructure.md`.
 3. **Expected data volume per learner?** — Owner: user. Block: no (small scale assumed). Carried from PRD Open Question 3.
 4. **Active-recall mode — typing the answer before revealing it?** — Owner: user. Block: no. Carried from PRD Open Question 4; explicitly deferred past v1, revisit only if scheduling feels inaccurate to a real learner.
-5. **Which scheduling scheme sets the next due date?** — Owner: user. Block: no. Gates: F-01, S-02. The PRD fixes only the ordering between the three ratings, not the algorithm, so any scheme respecting that ordering is acceptable — but the choice decides which fields the card record carries, so it is worth settling before F-01 is planned rather than migrating afterwards.
+5. **Which scheduling scheme sets the next due date?** — **RESOLVED 2026-09-05: a step ladder of fixed intervals (Leitner-style).** Owner: user. Gated: F-01, S-02 — both now clear. A card carries a step index alongside its next-due timestamp; each step maps to a fixed interval. "Missed it" returns the card to the first step, "got it" advances one step, "nailed it" advances two. This satisfies the PRD's ordering guarantee by construction rather than by tuning, which is why it was chosen over SM-2 (three-plus fields and floating-point ease values to get wrong) and over FSRS (needs a review-history table, which would push F-01 past its scope cap). Revisit only if a real learner reports scheduling feeling inaccurate — the same trigger PRD Open Question 4 names for active-recall mode. Now recorded upstream as well: `prd.md` §Business Logic (which is why `prd_version` here reads 2) and `CLAUDE.md` §Domain Model. The PRD delta is additive — no requirement, slice, or sequencing changed, so no regeneration is needed.
 
 ## Parked
 

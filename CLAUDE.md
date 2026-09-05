@@ -16,6 +16,7 @@ Foundation docs: `@context/foundation/prd.md` · `@context/foundation/tech-stack
 - **Review session:** cards with `next_review_at ≤ now` surface automatically on app open; no separate "due list" view.
 - **Rating:** three levels — `missed_it`, `got_it`, `nailed_it`. This is the sole user input to the scheduling decision.
 - **SRS invariant (non-negotiable):** `missed_it` must produce an earlier `next_review_at` than `got_it`, which must be earlier than `nailed_it`. A violation breaks the product's core value proposition.
+- **How intervals are derived:** a fixed-interval step ladder. Each card carries a step index alongside `next_review_at`; `missed_it` resets it to the first step, `got_it` advances one step, `nailed_it` advances two, and the resulting step maps to the interval. The invariant above therefore holds by construction — do not replace this with SM-2 (ease factor + repetition count) or FSRS (per-card stability/difficulty plus a review-history table) without an explicit decision; both were considered and rejected for v1. See `@context/foundation/prd.md` §Business Logic and `@context/foundation/roadmap.md` Open Roadmap Question 5.
 
 ## Access Control
 
@@ -42,6 +43,7 @@ CI runs `astro sync` before `lint`. If type errors appear locally, run `npx astr
 ## Environment Variables
 
 Copy `.env.example` → `.env`:
+
 - `SUPABASE_URL` — Supabase project URL
 - `SUPABASE_KEY` — Supabase anon key
 
@@ -79,12 +81,12 @@ Move from sprint-zero setup to project orchestration with the **roadmap chain**:
 
 ### Task Router - Where to start
 
-| Skill | Use it when |
-| --- | --- |
-| **Roadmap (lesson focus)** | |
-| `/10x-roadmap` | You have `context/foundation/prd.md` and a scaffolded project baseline, and you need a vertical-first MVP roadmap. The skill reads the PRD, inspects the code baseline, uses available foundation docs such as `tech-stack.md`, `infrastructure.md`, and `deploy-plan.md`, then writes `context/foundation/roadmap.md`. Use it BEFORE creating per-change folders or implementation plans. |
-| **Re-run upstream if needed** | |
-| `/10x-shape` / `/10x-prd` / `/10x-tech-stack-selector` / `/10x-bootstrapper` / `/10x-agents-md` / `/10x-infra-research` | Bundled from Module 1 so foundation contracts can be fixed before roadmap sequencing. If roadmap generation exposes a PRD gap, repair the PRD before pretending the backlog is ready. |
+| Skill                                                                                                                   | Use it when                                                                                                                                                                                                                                                                                                                                                                                |
+| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Roadmap (lesson focus)**                                                                                              |                                                                                                                                                                                                                                                                                                                                                                                            |
+| `/10x-roadmap`                                                                                                          | You have `context/foundation/prd.md` and a scaffolded project baseline, and you need a vertical-first MVP roadmap. The skill reads the PRD, inspects the code baseline, uses available foundation docs such as `tech-stack.md`, `infrastructure.md`, and `deploy-plan.md`, then writes `context/foundation/roadmap.md`. Use it BEFORE creating per-change folders or implementation plans. |
+| **Re-run upstream if needed**                                                                                           |                                                                                                                                                                                                                                                                                                                                                                                            |
+| `/10x-shape` / `/10x-prd` / `/10x-tech-stack-selector` / `/10x-bootstrapper` / `/10x-agents-md` / `/10x-infra-research` | Bundled from Module 1 so foundation contracts can be fixed before roadmap sequencing. If roadmap generation exposes a PRD gap, repair the PRD before pretending the backlog is ready.                                                                                                                                                                                                      |
 
 ### How the chain hands off
 
