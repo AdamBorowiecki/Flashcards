@@ -41,7 +41,7 @@ A solo language learner has hundreds of cards and no signal for which ones need 
 
 | ID   | Change ID                       | Outcome (user can …)                                                      | Prerequisites | PRD refs                         | Status   |
 | ---- | ------------------------------- | ------------------------------------------------------------------------- | ------------- | -------------------------------- | -------- |
-| F-01 | card-store-with-owner-isolation | (foundation) cards persist per learner, readable only by their owner      | —             | §Access Control, §Business Logic | planning |
+| F-01 | card-store-with-owner-isolation | (foundation) cards persist per learner, readable only by their owner      | —             | §Access Control, §Business Logic | in-progress |
 | S-01 | seed-deck-on-first-login        | sign in for the first time and find a starter deck already in the account | F-01          | FR-005                           | proposed |
 | S-02 | srs-review-and-reschedule       | reveal a card's back, rate recall, and have the card rescheduled          | F-01, S-01    | US-01, FR-003, FR-004            | blocked  |
 | S-03 | review-queue-on-app-open        | open the app and land straight in the due queue, with the due count shown | S-02          | FR-002                           | proposed |
@@ -73,7 +73,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - What scheduling state the card record needs beyond the next-due timestamp — depends on Open Roadmap Question 5, which is not settled yet. Owner: user. Block: no; this foundation carries front, back, owner, and the due timestamp only, and whatever additional state the chosen scheme needs arrives with S-02. Keeping it out of F-01 is the point — see Risk.
 - **Risk:** Sequenced first because per-learner isolation is the one property in this milestone that cannot be retrofitted safely — every later slice reads and writes cards, and a missed ownership rule leaks one learner's deck to another. Kept deliberately narrow: one card record and its access rule, not a general data layer. The failure mode to watch is scope creep into review history, statistics tables, or deck grouping that no must-have requirement asks for.
-- **Status:** planning
+- **Status:** in-progress
 
 ## Slices
 

@@ -4,7 +4,7 @@
 
 Create the project's first database table: a card record owned by exactly one learner, with that ownership enforced by Postgres row-level security rather than by application code. This is roadmap item **F-01**, the foundation that unlocks S-01 (starter deck), S-02 (review and reschedule) and S-04 (create own card).
 
-The change is deliberately narrow. It delivers one table, its access policy, one type, and a script that proves the isolation actually holds. It delivers no UI, no API route, and — critically — no scheduling state.
+The change is deliberately narrow. It delivers one table, its access policy, and a script that proves the isolation actually holds. It delivers no UI, no API route, no TypeScript, and — critically — no scheduling state.
 
 ## Current State Analysis
 
@@ -26,7 +26,7 @@ Two constraints shape the plan:
 
 A table `public.cards` exists in the cloud Supabase project with row-level security enabled and four policies keyed on `auth.uid() = user_id`. A signed-in learner can read and write only their own rows; an unauthenticated request sees nothing. The migration that produced this state is committed in the repo and recorded in the remote migration history, so the next migration builds on a known baseline.
 
-Verification that this is true: `npx supabase migration list` shows the migration applied both locally and remotely, and `supabase/tests/cards_rls.sql` runs to completion with every assertion passing — including the one that proves learner A cannot read learner B's cards.
+Verification that this is true: `supabase/tests/cards_rls.sql` runs to completion **against the local stack** with every assertion passing — including the positive one proving learner A does see their own row, and the negative one proving A cannot see B's — and only then does `npx supabase migration list` show the migration in the remote column.
 
 ### Key Discoveries
 
@@ -34,29 +34,33 @@ Verification that this is true: `npx supabase migration list` shows the migratio
 - `AGENTS.md:11` names multi-user ownership columns as a first-code signal of out-of-scope work. The ownership column here is singular (`user_id`) by design.
 - `CLAUDE.md` §Domain Model fixes the vocabulary: a card is front + back, belongs to one user, and carries `next_review_at`. These are contract names, registered in `docs/reference/contract-surfaces.md`.
 - Roadmap F-01 `Unknowns` explicitly defers scheduling state: Open Roadmap Question 5 is open and blocks S-02, so any rung index / ease factor / repetition count arrives with that slice, not this one.
-- `src/pages/api/auth/signin.ts:9-12` establishes the null-guard convention for `createClient` that any future card query must follow.
+- `supabase test db` is documented by the CLI as _"Tests local Supabase containers"_ — the verification runner cannot reach a cloud project, which is why verification is a local-only phase that precedes the cloud push.
 - `supabase/config.toml:36` pins Postgres major version 17, and `config.toml:55` has migrations enabled.
 
 ## What We're NOT Doing
 
 - **No scheduling state.** No rung index, ease factor, repetition count, or review-state column. Open Roadmap Question 5 is unsettled and this foundation must not prejudge it.
 - **No review history table**, no statistics table, no deck grouping. The roadmap's F-01 Risk names all three as the scope-creep failure mode.
-- **No UI and no API endpoints.** Nothing in `src/pages/` changes. S-01 and S-04 own their own read/write paths.
-- **No data-access module.** No `src/lib/cards.ts` with list/insert helpers — the first slice that actually queries decides the query shape.
-- **No generated Supabase types.** A hand-written `Card` type is enough at one table; revisit when the schema grows.
+- **No UI and no API endpoints.** Nothing in `src/pages/` changes.
+- **No TypeScript at all.** No `Card` type, no data-access module, no generated Supabase types. Nothing in this change has a consumer yet, and a row type written before a real query is a guess — `supabase-js` returns column names verbatim (`user_id`, not `userId`), so the shape is best settled by the first slice that actually reads it.
 - **No seed data.** The starter deck is S-01.
 - **No test framework.** Verification is a SQL script, not a new dependency.
 - **No CI wiring.** The RLS script is run by hand; putting it in CI needs database credentials in GitHub secrets, which is its own decision.
+- **No verification against the cloud project.** The script creates users and rows; it runs only against a disposable local database.
 
 ## Implementation Approach
 
-Three phases with a deliberate boundary. Phase 1 touches only the repository and is fully reversible by `git checkout`. Phase 2 is the only phase with an external, hard-to-undo effect — it writes schema to a live project — so it sits behind a manual gate. Phase 3 proves the property the whole foundation exists for, then corrects the two documents that would otherwise lie about the new state.
+Three phases, ordered so that nothing unproven reaches production. Phase 1 touches only the repository and is fully reversible by `git checkout`. Phase 2 stands up a disposable local database, applies the migration there, and proves the isolation property — all of it throwaway. Phase 3 is the only phase with an external, hard-to-undo effect: it pushes a migration that has already been proven to isolate correctly, then corrects the two documents that would otherwise lie about the new state.
 
 ## Critical Implementation Details
 
 **RLS is default-deny, and that is the whole safety mechanism.** `alter table ... enable row level security` with no policies blocks every read and write, including through the anon key. Enabling RLS and creating the policies must land in the same migration — a migration that enables RLS and stops leaves a table nothing can touch, and a migration that creates the table without enabling RLS leaves every learner's cards readable by every other learner through the anon key. Neither half is safe alone.
 
+**RLS is not a grant.** Policies decide which rows a role may touch; they do not give the role access to the table in the first place. A new table in `public` is reachable only if the role holds a `GRANT`. Supabase's standard bootstrap sets default privileges in `public` for `anon`, `authenticated` and `service_role`, so this usually works silently — but when it does not, the error is `permission denied for table cards`, which reads exactly like a broken policy and will send you off rewriting policies that were correct all along. The migration therefore grants explicitly; it is idempotent and harmless if the default privileges already cover it.
+
 **`auth.uid()` reads the JWT the request carries, not a session on the server.** The SSR client forwards the learner's access token from cookies, so `auth.uid()` resolves inside the policy for a signed-in request and returns `NULL` for an anonymous one — which makes every policy predicate false and yields zero rows. That is the intended behaviour for the unauthenticated case, not a misconfiguration to work around.
+
+**Connecting to Postgres as the `postgres` superuser bypasses RLS.** The verification script must `set local role authenticated` before asserting anything, or every policy will appear to pass while actually being ignored.
 
 **The `service_role` key bypasses RLS completely.** This project only ever uses the anon key (`SUPABASE_KEY`, declared `optional: true` in `astro.config.mjs`), so isolation holds today. If a future change introduces a service-role path, RLS stops protecting anything on that path and the user-id predicate has to be written by hand — which is exactly what `AGENTS.md:9` warns about.
 
@@ -64,11 +68,11 @@ Three phases with a deliberate boundary. Phase 1 touches only the repository and
 
 ---
 
-## Phase 1: Schema and type in the repo
+## Phase 1: Migration in the repo
 
 ### Overview
 
-Write the migration and the `Card` type. Nothing is applied to any database in this phase; the working tree is the only thing that changes.
+Write the migration. Nothing is applied to any database in this phase; the working tree is the only thing that changes.
 
 ### Changes Required:
 
@@ -88,85 +92,46 @@ Write the migration and the `Card` type. Nothing is applied to any database in t
 
 Plus an index on `(user_id, next_review_at)` — the shape of every due-queue query S-02 and S-03 will issue.
 
-Then `alter table public.cards enable row level security` and four policies, all predicated on `auth.uid() = user_id`: select (`using`), insert (`with check`), update (`using` **and** `with check` — without the `with check` half a learner could reassign a row to someone else), delete (`using`).
+Then, in the same file and in this order:
 
-#### 2. Card type
-
-**File**: `src/lib/card.ts` (new)
-
-**Intent**: Give the consuming slices one shared shape for a card row so they don't each re-declare it. Type only — no functions, no queries.
-
-**Contract**: `export type Card` with fields mirroring the table one-to-one: `id: string`, `userId: string`, `front: string`, `back: string`, `nextReviewAt: string`, `createdAt: string`. Import path is `@/lib/card` per the alias rule in `CLAUDE.md` §TypeScript.
+1. `grant select, insert, update, delete on public.cards to authenticated;` — see Critical Implementation Details on why RLS alone is not enough.
+2. `alter table public.cards enable row level security`.
+3. Four policies, all predicated on `auth.uid() = user_id`: select (`using`), insert (`with check`), update (`using` **and** `with check` — without the `with check` half a learner could reassign a row to someone else), delete (`using`).
 
 ### Success Criteria:
 
 #### Automated Verification:
 
-- Linting passes: `npm run lint`
-- Build passes: `npm run build`
-- Formatting is clean: `npm run format`
 - A file matching `supabase/migrations/*_create_cards_table.sql` exists
+- Build still passes: `npm run build`
 
 #### Manual Verification:
 
 - The migration contains no scheduling-state column beyond `next_review_at` — no rung, ease, interval, or repetition field
 - All four policies are present and every one of them is keyed on `auth.uid() = user_id`
-- `enable row level security` and the policies are in the same migration file
+- The grant, `enable row level security`, and the four policies are all in the same migration file
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual review was successful before proceeding to the next phase.
 
 ---
 
-## Phase 2: Apply to the cloud project
+## Phase 2: Apply and verify locally
 
 ### Overview
 
-Link the CLI to the live Supabase project and push the migration. This is the only phase with an effect outside the repository.
+Stand up a disposable local database, apply the migration to it, and prove the isolation property before anything reaches the cloud project. Everything in this phase is throwaway — `supabase stop` discards it.
 
 ### Changes Required:
 
-#### 1. CLI link
+#### 1. Local stack
 
-**File**: none tracked — `supabase link` writes to `supabase/.temp/`, which `supabase/.gitignore` already excludes
+**File**: none tracked — the CLI writes to Docker volumes and to `supabase/.temp/`, which `supabase/.gitignore` already excludes
 
-**Intent**: Point the CLI at the project the production Worker actually talks to, so the migration lands where the app reads.
+**Intent**: Provide a database that can be freely created, mutated and destroyed, so verification never touches anything real.
 
-**Contract**: `npx supabase link --project-ref <ref>`. The project ref and database password are secrets the human supplies interactively; they are never written to a tracked file or pasted into the conversation.
+**Contract**: `npx supabase start` (requires Docker, ~7 GB RAM per `README.md:79`), then `npx supabase db reset` to apply the Phase 1 migration from scratch.
 
-#### 2. Migration push
-
-**File**: none — remote schema change only
-
-**Intent**: Apply the Phase 1 migration to the cloud database and initialize remote migration history.
-
-**Contract**: `npx supabase db push`. Expect it to create the `supabase_migrations` bookkeeping schema on first run alongside `public.cards`.
-
-### Success Criteria:
-
-#### Automated Verification:
-
-- `npx supabase migration list` shows the migration present in the remote column
-- Build still passes: `npm run build`
-
-#### Manual Verification:
-
-- The `cards` table is visible in the Supabase dashboard with the RLS badge showing enabled
-- All four policies appear under the table's Auth Policies view
-- Sign-in on the live Worker still works — this change touches no auth path, so any regression here means something unexpected happened
-
-**Implementation Note**: This phase writes to a live project. Stop before `db push` and get explicit human confirmation to proceed. After the push, pause again for manual confirmation before Phase 3.
-
----
-
-## Phase 3: Prove isolation and record reality
-
-### Overview
-
-Demonstrate that the policy does what it claims, then fix the two documents that would otherwise describe a state that no longer exists.
-
-### Changes Required:
-
-#### 1. RLS verification script
+#### 2. RLS verification script
 
 **File**: `supabase/tests/cards_rls.sql` (new)
 
@@ -176,14 +141,55 @@ Demonstrate that the policy does what it claims, then fix the two documents that
 
 - creates two users in `auth.users` with known UUIDs
 - inserts one card for each
-- sets the request JWT claims to learner A (`set local role authenticated` plus `set local request.jwt.claims`) and asserts a select returns exactly A's one row
+- `set local role authenticated` and sets `request.jwt.claims` to learner A, then asserts a select returns **exactly A's one row** — this positive assertion must come first and must pass, because every assertion below is satisfied by an empty database
 - asserts an attempt to insert a row owned by B while acting as A is rejected
 - asserts an attempt to update B's row while acting as A affects zero rows
 - resets to an anonymous claim and asserts a select returns zero rows
 
-Assertions use `do $$ begin if ... then raise exception ... end if; end $$;` so the script exits non-zero on failure rather than printing a table the reader has to interpret. Add a header comment naming the exact command to run it, since nothing in `package.json` will.
+Assertions use `do $$ begin if ... then raise exception ... end if; end $$;` so the script exits non-zero on failure rather than printing a table the reader has to interpret. Header comment names the run command explicitly, since nothing in `package.json` will: `npx supabase test db`, or `psql "$(npx supabase status -o env | grep DB_URL)" -v ON_ERROR_STOP=1 -f supabase/tests/cards_rls.sql` if pgTAP conventions get in the way.
 
-#### 2. README correction
+### Success Criteria:
+
+#### Automated Verification:
+
+- `npx supabase db reset` applies the migration with no error
+- `npx supabase migration list` shows the migration applied in the local column
+- The RLS script runs to completion with no exception raised
+
+#### Manual Verification:
+
+- The positive assertion — learner A sees exactly their own row — passed. A run where every assertion is satisfied by zero rows proves nothing
+- `npx supabase status` confirms the script ran against the local stack, not a linked remote
+
+**Implementation Note**: Everything here is disposable. If the script fails, fix the migration in Phase 1 and re-run `db reset` — do not proceed to Phase 3 with a failing assertion.
+
+---
+
+## Phase 3: Push to cloud and record reality
+
+### Overview
+
+Push the now-proven migration to the live Supabase project, then fix the two documents that would otherwise describe a state that no longer exists. This is the only phase with an effect outside the repository.
+
+### Changes Required:
+
+#### 1. CLI link
+
+**File**: none tracked — `supabase link` writes to `supabase/.temp/`
+
+**Intent**: Point the CLI at the project the production Worker actually talks to, so the migration lands where the app reads.
+
+**Contract**: `npx supabase link --project-ref <ref>`. The project ref and database password are secrets the human supplies interactively; they are never written to a tracked file or pasted into the conversation.
+
+#### 2. Migration push
+
+**File**: none — remote schema change only
+
+**Intent**: Apply the verified migration to the cloud database and initialize remote migration history.
+
+**Contract**: `npx supabase db push`. Expect it to create the `supabase_migrations` bookkeeping schema on first run alongside `public.cards`.
+
+#### 3. README correction
 
 **File**: `README.md`
 
@@ -191,7 +197,7 @@ Assertions use `do $$ begin if ... then raise exception ... end if; end $$;` so 
 
 **Contract**: The sentence at `README.md:114` under "First-time setup". Replace with a line stating that migrations live in `supabase/migrations/` and are applied with `npx supabase db push` (or `npx supabase db reset` locally). Leave the surrounding local-setup steps untouched.
 
-#### 3. Contract surfaces registration
+#### 4. Contract surfaces registration
 
 **File**: `docs/reference/contract-surfaces.md`
 
@@ -203,25 +209,29 @@ Assertions use `do $$ begin if ... then raise exception ... end if; end $$;` so 
 
 #### Automated Verification:
 
-- The RLS script runs to completion with no exception raised
-- Linting passes: `npm run lint`
+- `npx supabase migration list` shows the migration present in the remote column
+- Build still passes: `npm run build`
 - Formatting is clean: `npm run format`
 
 #### Manual Verification:
 
+- The `cards` table is visible in the Supabase dashboard with the RLS badge showing enabled
+- All four policies appear under the table's Auth Policies view
+- Sign-in on the live Worker still works — this change touches no auth path, so any regression here means something unexpected happened
 - `README.md` no longer claims that no tables or migrations are required
 - `contract-surfaces.md` still shows per-card scheduling state as undecided — this change must not appear to settle Open Roadmap Question 5
 
-**Implementation Note**: After this phase, F-01 is complete. The roadmap item moves to `done` via `/10x-archive`, not by hand.
+**Implementation Note**: This phase writes to a live project. Stop before `db push` and get explicit human confirmation to proceed. After this phase, F-01 is complete; the roadmap item moves to `done` via `/10x-archive`, not by hand.
 
 ---
 
 ## Testing Strategy
 
-There is no test framework in this repo, and this change deliberately does not add one. Verification is therefore split by what each method can actually prove:
+There is no test framework in this repo, and this change deliberately does not add one. Verification is split by what each method can actually prove:
 
-### SQL-level (the real test):
+### SQL-level, against the local stack (the real test):
 
+- Learner A sees exactly their own row — the positive assertion that makes the rest meaningful
 - Cross-learner read returns zero rows
 - Cross-learner insert is rejected
 - Cross-learner update affects zero rows
@@ -229,14 +239,14 @@ There is no test framework in this repo, and this change deliberately does not a
 
 ### Build-level:
 
-- `npm run lint` and `npm run build` catch type and style regressions in `src/lib/card.ts`
+- `npm run build` guards against unrelated regressions; this change ships no source files, so it proves nothing about the migration itself
 
 ### Manual:
 
 - Dashboard inspection confirms RLS is enabled and policies exist as written
 - The live Worker's auth flow still works after the schema push
 
-The gap worth naming: none of this runs in CI. Wiring `cards_rls.sql` into `.github/workflows/ci.yml` needs database credentials as repository secrets, which is a separate decision and a separate change.
+The gap worth naming: none of this runs in CI. Wiring `cards_rls.sql` into `.github/workflows/ci.yml` needs a database and credentials in GitHub secrets, which is a separate decision and a separate change.
 
 ## Performance Considerations
 
@@ -244,59 +254,61 @@ One index on `(user_id, next_review_at)` covers the only query shape this milest
 
 ## Migration Notes
 
-This is the project's first migration, so there is no existing data to migrate and no rollback path to preserve. Reverting means dropping the table.
+This is the project's first migration, so there is no existing data to migrate and no rollback path to preserve. Reverting the local database is `npx supabase db reset`; reverting the cloud one means a new forward migration that drops the table, since `db push` has no down step.
 
-The local and cloud databases are separate. If you also run the local stack (`npx supabase start`), apply the same migration there with `npx supabase db reset` so the two stay aligned; otherwise local dev will disagree with production about whether `cards` exists.
+Local and cloud stay aligned because Phase 2 applies the migration locally and Phase 3 pushes the same file — but only for as long as you keep running `db reset` after future migrations.
 
 ## References
 
 - Roadmap item: `context/foundation/roadmap.md` — F-01, and Open Roadmap Question 5 for the deferred scheduling decision
 - Change identity: `context/changes/card-store-with-owner-isolation/change.md`
+- Plan review: `context/changes/card-store-with-owner-isolation/reviews/plan-review.md`
 - Isolation rule: `AGENTS.md:9`
 - Domain vocabulary: `CLAUDE.md` §Domain Model, `docs/reference/contract-surfaces.md`
-- Client convention: `src/lib/supabase.ts`, `src/pages/api/auth/signin.ts:9-12`
+- Local setup: `README.md:77-114`
 
 ## Progress
 
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
 
-### Phase 1: Schema and type in the repo
+### Phase 1: Migration in the repo
 
 #### Automated
 
-- [ ] 1.1 Linting passes: `npm run lint`
-- [ ] 1.2 Build passes: `npm run build`
-- [ ] 1.3 Formatting is clean: `npm run format`
-- [ ] 1.4 A file matching `supabase/migrations/*_create_cards_table.sql` exists
+- [x] 1.1 A file matching `supabase/migrations/*_create_cards_table.sql` exists
+- [x] 1.2 Build still passes: `npm run build`
 
 #### Manual
 
-- [ ] 1.5 The migration contains no scheduling-state column beyond `next_review_at`
-- [ ] 1.6 All four policies are present and keyed on `auth.uid() = user_id`
-- [ ] 1.7 `enable row level security` and the policies are in the same migration file
+- [x] 1.3 The migration contains no scheduling-state column beyond `next_review_at`
+- [x] 1.4 All four policies are present and keyed on `auth.uid() = user_id`
+- [x] 1.5 The grant, `enable row level security`, and the four policies are all in the same migration file
 
-### Phase 2: Apply to the cloud project
+### Phase 2: Apply and verify locally
 
 #### Automated
 
-- [ ] 2.1 `npx supabase migration list` shows the migration present remotely
-- [ ] 2.2 Build still passes: `npm run build`
+- [ ] 2.1 `npx supabase db reset` applies the migration with no error
+- [ ] 2.2 `npx supabase migration list` shows the migration applied locally
+- [ ] 2.3 The RLS script runs to completion with no exception raised
 
 #### Manual
 
-- [ ] 2.3 The `cards` table is visible in the dashboard with RLS enabled
-- [ ] 2.4 All four policies appear under the table's Auth Policies view
-- [ ] 2.5 Sign-in on the live Worker still works
+- [ ] 2.4 The positive assertion — learner A sees exactly their own row — passed
+- [ ] 2.5 `npx supabase status` confirms the script ran against the local stack
 
-### Phase 3: Prove isolation and record reality
+### Phase 3: Push to cloud and record reality
 
 #### Automated
 
-- [ ] 3.1 The RLS script runs to completion with no exception raised
-- [ ] 3.2 Linting passes: `npm run lint`
+- [ ] 3.1 `npx supabase migration list` shows the migration present remotely
+- [ ] 3.2 Build still passes: `npm run build`
 - [ ] 3.3 Formatting is clean: `npm run format`
 
 #### Manual
 
-- [ ] 3.4 `README.md` no longer claims that no tables or migrations are required
-- [ ] 3.5 `contract-surfaces.md` still shows per-card scheduling state as undecided
+- [ ] 3.4 The `cards` table is visible in the dashboard with RLS enabled
+- [ ] 3.5 All four policies appear under the table's Auth Policies view
+- [ ] 3.6 Sign-in on the live Worker still works
+- [ ] 3.7 `README.md` no longer claims that no tables or migrations are required
+- [ ] 3.8 `contract-surfaces.md` still shows per-card scheduling state as undecided
