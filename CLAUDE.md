@@ -16,7 +16,6 @@ Foundation docs: `@context/foundation/prd.md` · `@context/foundation/tech-stack
 - **Review session:** cards with `next_review_at ≤ now` surface automatically on app open; no separate "due list" view.
 - **Rating:** three levels — `missed_it`, `got_it`, `nailed_it`. This is the sole user input to the scheduling decision.
 - **SRS invariant (non-negotiable):** `missed_it` must produce an earlier `next_review_at` than `got_it`, which must be earlier than `nailed_it`. A violation breaks the product's core value proposition.
-- **How intervals are derived:** a fixed-interval step ladder. Each card carries a step index alongside `next_review_at`; `missed_it` resets it to the first step, `got_it` advances one step, `nailed_it` advances two, and the resulting step maps to the interval. The invariant above therefore holds by construction — do not replace this with SM-2 (ease factor + repetition count) or FSRS (per-card stability/difficulty plus a review-history table) without an explicit decision; both were considered and rejected for v1. See `@context/foundation/prd.md` §Business Logic and `@context/foundation/roadmap.md` Open Roadmap Question 5.
 
 ## Access Control
 

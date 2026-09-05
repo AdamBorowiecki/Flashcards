@@ -4,7 +4,7 @@ version: 1
 status: draft
 created: 2026-09-03
 updated: 2026-09-05
-prd_version: 2
+prd_version: 1
 main_goal: low-complexity
 top_blocker: time
 milestone_id: working-srs-loop
@@ -43,7 +43,7 @@ A solo language learner has hundreds of cards and no signal for which ones need 
 | ---- | ------------------------------- | ------------------------------------------------------------------------- | ------------- | -------------------------------- | -------- |
 | F-01 | card-store-with-owner-isolation | (foundation) cards persist per learner, readable only by their owner      | —             | §Access Control, §Business Logic | ready    |
 | S-01 | seed-deck-on-first-login        | sign in for the first time and find a starter deck already in the account | F-01          | FR-005                           | proposed |
-| S-02 | srs-review-and-reschedule       | reveal a card's back, rate recall, and have the card rescheduled          | F-01, S-01    | US-01, FR-003, FR-004            | proposed |
+| S-02 | srs-review-and-reschedule       | reveal a card's back, rate recall, and have the card rescheduled          | F-01, S-01    | US-01, FR-003, FR-004            | blocked  |
 | S-03 | review-queue-on-app-open        | open the app and land straight in the due queue, with the due count shown | S-02          | FR-002                           | proposed |
 | S-04 | create-own-flashcard            | create a flashcard with a front and a back                                | F-01          | FR-001                           | proposed |
 
@@ -66,11 +66,12 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Outcome:** (foundation) a card record persists with its front, its back, its owning learner, and the timestamp at which it next becomes due; a learner can read and write only their own cards, enforced at the database layer rather than in application code.
 - **Change ID:** `card-store-with-owner-isolation`
 - **PRD refs:** §Access Control, §Business Logic
-- **Unlocks:** S-01 (needs somewhere to put the starter deck), S-02 (needs a due timestamp to move), S-04 (needs somewhere to put a created card). Also reduces Open Roadmap Question 5 by forcing the card record's shape to be decided once.
+- **Unlocks:** S-01 (needs somewhere to put the starter deck), S-02 (needs a due timestamp to move), S-04 (needs somewhere to put a created card). It deliberately does **not** settle Open Roadmap Question 5 — the scheduling scheme and any state it needs stay open until research closes them, so this foundation can ship without prejudging it.
 - **Prerequisites:** —
 - **Parallel with:** —
 - **Blockers:** —
-- **Unknowns:** — (resolved 2026-09-05: Open Roadmap Question 5 settled on a step-ladder scheme, so the card record carries a step index alongside the next-due timestamp.)
+- **Unknowns:**
+  - What scheduling state the card record needs beyond the next-due timestamp — depends on Open Roadmap Question 5, which is not settled yet. Owner: user. Block: no; this foundation carries front, back, owner, and the due timestamp only, and whatever additional state the chosen scheme needs arrives with S-02. Keeping it out of F-01 is the point — see Risk.
 - **Risk:** Sequenced first because per-learner isolation is the one property in this milestone that cannot be retrofitted safely — every later slice reads and writes cards, and a missed ownership rule leaks one learner's deck to another. Kept deliberately narrow: one card record and its access rule, not a general data layer. The failure mode to watch is scope creep into review history, statistics tables, or deck grouping that no must-have requirement asks for.
 - **Status:** ready
 
@@ -97,9 +98,10 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Prerequisites:** F-01, S-01
 - **Parallel with:** S-04
 - **Blockers:** —
-- **Unknowns:** — (resolved 2026-09-05: Open Roadmap Question 5 settled the scheduling scheme; see that entry for the rule this slice implements.)
+- **Unknowns:**
+  - Which scheduling scheme sets the next due date, and what per-card state it imposes — see Open Roadmap Question 5. Owner: user. Block: **yes**; the scheme decides the rating scale this slice submits, the state it persists, and what happens to a card's schedule when it is edited. Answering it is a design question, not something reading this repo can settle, so it needs dedicated research before this slice is planned.
 - **Risk:** This is the slice the whole milestone exists to deliver, so it is placed as early as its Prerequisites allow. The scheduling rule lives here rather than in a separate foundation, because pulling it out ahead of the interface that exercises it would build a rule with nothing to check it against. The ordering guarantee between the three ratings needs an executable check inside this slice — the PRD calls a violation fatal to the product, and it is not visible by eye during a manual click-through.
-- **Status:** proposed
+- **Status:** blocked
 
 ### S-03: App opens straight into the due queue
 
@@ -142,7 +144,11 @@ Foundations below assume these are present and do NOT re-scaffold them.
 2. **Expected requests-per-second load?** — Owner: user. Block: no (small scale assumed). Carried from PRD Open Question 2; already absorbed by the platform decision in `infrastructure.md`.
 3. **Expected data volume per learner?** — Owner: user. Block: no (small scale assumed). Carried from PRD Open Question 3.
 4. **Active-recall mode — typing the answer before revealing it?** — Owner: user. Block: no. Carried from PRD Open Question 4; explicitly deferred past v1, revisit only if scheduling feels inaccurate to a real learner.
-5. **Which scheduling scheme sets the next due date?** — **RESOLVED 2026-09-05: a step ladder of fixed intervals (Leitner-style).** Owner: user. Gated: F-01, S-02 — both now clear. A card carries a step index alongside its next-due timestamp; each step maps to a fixed interval. "Missed it" returns the card to the first step, "got it" advances one step, "nailed it" advances two. This satisfies the PRD's ordering guarantee by construction rather than by tuning, which is why it was chosen over SM-2 (three-plus fields and floating-point ease values to get wrong) and over FSRS (needs a review-history table, which would push F-01 past its scope cap). Revisit only if a real learner reports scheduling feeling inaccurate — the same trigger PRD Open Question 4 names for active-recall mode. Now recorded upstream as well: `prd.md` §Business Logic (which is why `prd_version` here reads 2) and `CLAUDE.md` §Domain Model. The PRD delta is additive — no requirement, slice, or sequencing changed, so no regeneration is needed.
+5. **Which scheduling scheme sets the next due date?** — **OPEN — needs dedicated research.** Owner: user. Blocks: **S-02** (and therefore S-03 behind it). The PRD fixes only the ordering between the three ratings, never an algorithm. This is not a question the repository can answer: the scheme decides the rating scale S-02 submits, the per-card state that gets persisted, and the policy for what happens to a card's schedule when its content is edited.
+
+   **Working direction (not a decision):** a step ladder of fixed intervals — card carries a rung index, "missed it" returns it to the first rung, "got it" advances one, "nailed it" advances two. It satisfies the ordering guarantee by construction rather than by tuning, and needs no library. Recorded here so the research has a baseline to argue against, **not** as a settled contract — SM-2 and FSRS were dismissed on a quick read, not on evidence.
+
+   Settle this with dedicated research before S-02 is planned. Deliberately kept out of `prd.md` and `CLAUDE.md` so nothing downstream treats it as fixed.
 
 ## Parked
 

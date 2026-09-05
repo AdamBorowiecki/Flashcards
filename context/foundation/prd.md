@@ -1,6 +1,6 @@
 ---
 project: "# TODO: project name — see Open Questions"
-version: 2
+version: 1
 status: draft
 created: 2026-05-26
 context_type: greenfield
@@ -82,8 +82,6 @@ The insight: apps like Anki implement the correct scheduling algorithm but their
 The app schedules each card's next review date based on the learner's recall rating — a card rated "missed it" comes back sooner than one rated "nailed it" — so the learner opens the app and reviews whatever is due without having to decide what to study.
 
 The learner's recall rating is the sole user-provided input to the scheduling decision. The app produces one output: a due date for each card, invisible to the learner, that determines when the card surfaces again. The learner encounters the rule passively — they open the app, review whatever is ready, rate each card, and the app handles the rest.
-
-**How the interval is derived (decided 2026-09-05).** Each card carries a position on a ladder of fixed intervals alongside its due date. A rating of "missed it" returns the card to the first rung, "got it" advances it one rung, "nailed it" advances it two; the rung the card lands on determines how far out the next due date is set. This makes the ordering guarantee above hold by construction rather than by tuning parameters. The alternatives considered and rejected were SM-2, which needs an ease factor and repetition count per card and so has more surface on which the ordering can silently break, and FSRS, which requires retaining a full review history per card — more storage and more moving parts than a first version needs. Revisit only if a real learner reports that scheduling feels inaccurate; that is the same trigger Open Question 4 names for active-recall mode.
 
 ## Access Control
 
