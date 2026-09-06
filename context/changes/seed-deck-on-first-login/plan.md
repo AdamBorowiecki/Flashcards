@@ -326,31 +326,31 @@ The backfill is the only part of this change that touches existing rows, and it 
 
 #### Automated
 
-- [x] 1.1 A file matching `supabase/migrations/*_seed_starter_deck.sql` exists and sorts after the cards migration
-- [x] 1.2 Build still passes: `npm run build`
+- [x] 1.1 A file matching `supabase/migrations/*_seed_starter_deck.sql` exists and sorts after the cards migration — c19a258
+- [x] 1.2 Build still passes: `npm run build` — c19a258
 
 #### Manual
 
-- [x] 1.3 Function is `security definer` with `set search_path = ''` and fully qualified table references
-- [x] 1.4 Exception handler present and returns `new`
-- [x] 1.5 Backfill carries the `not exists` guard
-- [x] 1.6 Exactly ten pairs, defined only in `public.starter_deck()` and selected from it by both the trigger and the backfill
-- [x] 1.7 No column beyond `user_id`, `front`, `back` is written
+- [x] 1.3 Function is `security definer` with `set search_path = ''` and fully qualified table references — c19a258
+- [x] 1.4 Exception handler present and returns `new` — c19a258
+- [x] 1.5 Backfill carries the `not exists` guard — c19a258
+- [x] 1.6 Exactly ten pairs, defined only in `public.starter_deck()` and selected from it by both the trigger and the backfill — c19a258
+- [x] 1.7 No column beyond `user_id`, `front`, `back` is written — c19a258
 
 ### Phase 2: Apply and verify locally
 
 #### Automated
 
-- [ ] 2.1 `npx supabase db reset` applies both migrations with no error
-- [ ] 2.2 `npx supabase migration list --local` shows both migrations
-- [ ] 2.3 `supabase/tests/seed_deck.sql` runs to completion with exit code 0
-- [ ] 2.4 `supabase/tests/cards_rls.sql`, rewritten to assert count deltas, still passes
+- [x] 2.1 `npx supabase db reset` applies both migrations with no error
+- [x] 2.2 `npx supabase migration list --local` shows both migrations
+- [x] 2.3 `supabase/tests/seed_deck.sql` runs to completion with exit code 0
+- [x] 2.4 `supabase/tests/cards_rls.sql`, rewritten to assert count deltas, still passes
 
 #### Manual
 
-- [ ] 2.5 Positive assertion — ten cards, right owner, all due — passed
-- [ ] 2.6 Idempotency assertion passed with the count unchanged
-- [ ] 2.7 Resilience assertion passed: user created, deck empty, warning logged
+- [x] 2.5 Positive assertion — ten cards, right owner, all due — passed
+- [x] 2.6 Idempotency assertion passed with the count unchanged
+- [x] 2.7 Resilience assertion passed: user created, deck empty, warning logged
 
 ### Phase 3: Deck count on the dashboard
 

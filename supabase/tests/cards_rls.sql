@@ -22,7 +22,7 @@
 -- What this script catches, and what it does not -- established by deliberately
 -- weakening each policy in turn against a throwaway local database:
 --
---   * cards_select_own broken -> assertion 1 fails; it sees 2 rows where it demands 1
+--   * cards_select_own broken -> assertion 1 fails; it sees 22 rows where it demands 11
 --   * cards_insert_own broken -> assertion 3 fails
 --   * cards_update_own broken, either half, on its own -> nothing fails
 --
@@ -40,12 +40,26 @@ begin;
 -- ---------------------------------------------------------------------------
 -- Fixtures: two learners, one card each. Created as the superuser, before any
 -- role switch, because auth.users is not writable by `authenticated`.
+--
+-- Creating a learner is no longer free of side effects: since S-01, an
+-- `after insert` trigger on auth.users gives every new account a starter deck.
+-- So the baseline below is captured after account creation and before the
+-- fixture card, and the assertions that follow test the DELTA. Asserting an
+-- absolute count here would be asserting the current size of the starter deck,
+-- which is not what this file is for.
 -- ---------------------------------------------------------------------------
 
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at)
 values
   ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'learner-a@example.test', '', now(), now(), now()),
   ('22222222-2222-2222-2222-222222222222', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'learner-b@example.test', '', now(), now(), now());
+
+-- Transaction-local setting, readable by any role after the switch below.
+select set_config(
+  'cards_rls.baseline_a',
+  (select count(*) from public.cards where user_id = '11111111-1111-1111-1111-111111111111'::uuid)::text,
+  true
+);
 
 insert into public.cards (user_id, front, back)
 values
@@ -61,22 +75,28 @@ values
 set local role authenticated;
 set local request.jwt.claims = '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
 
--- 1. POSITIVE: A sees exactly their own row.
+-- 1. POSITIVE: A sees their own rows, and only their own.
 --    This one comes first and must pass. Every assertion after it is also
 --    satisfied by an empty table, so without this they prove nothing.
+--    Stated as a delta against the baseline: exactly one card more than the
+--    starter deck A was created with, and nothing visible that is not theirs.
 do $$
 declare
   visible_count integer;
-  visible_owner uuid;
+  foreign_rows integer;
+  baseline integer := current_setting('cards_rls.baseline_a')::integer;
 begin
   select count(*) into visible_count from public.cards;
-  if visible_count <> 1 then
-    raise exception 'positive read: learner A should see exactly 1 card, saw %', visible_count;
+  if visible_count <> baseline + 1 then
+    raise exception 'positive read: learner A should see % cards (starter deck + 1), saw %', baseline + 1, visible_count;
   end if;
 
-  select user_id into visible_owner from public.cards;
-  if visible_owner <> '11111111-1111-1111-1111-111111111111'::uuid then
-    raise exception 'positive read: the visible card belongs to %, not to learner A', visible_owner;
+  select count(*) into foreign_rows
+  from public.cards
+  where user_id <> '11111111-1111-1111-1111-111111111111'::uuid;
+
+  if foreign_rows <> 0 then
+    raise exception 'positive read: % visible row(s) belong to somebody other than learner A', foreign_rows;
   end if;
 end $$;
 
