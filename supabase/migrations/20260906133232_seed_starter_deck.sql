@@ -35,6 +35,18 @@ $$;
 comment on function public.starter_deck() is
   'The built-in starter deck (FR-005). Single source of the seed vocabulary -- the signup trigger and the backfill both read it.';
 
+-- Nothing outside the database needs to call this. The trigger function below is
+-- security definer and reaches it as the owner; the backfill runs as postgres
+-- during the migration. Left alone it would be published by PostgREST -- `public`
+-- is an exposed schema -- as POST /rest/v1/rpc/starter_deck, answering
+-- unauthenticated callers with 200 and the whole deck.
+--
+-- Revoking from PUBLIC alone is NOT enough and looks like it worked: Supabase's
+-- bootstrap sets default privileges that grant EXECUTE to anon, authenticated and
+-- service_role by name, so the function still carries those after a PUBLIC revoke.
+-- The role grants have to come off explicitly.
+revoke execute on function public.starter_deck() from public, anon, authenticated, service_role;
+
 -- Runs as its owner, so it writes past RLS without this project ever needing a
 -- service-role key. `set search_path = ''` is the standard hardening against a
 -- caller shadowing a name to hijack an elevated function; the cost is that
