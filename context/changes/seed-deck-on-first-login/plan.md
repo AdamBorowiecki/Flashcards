@@ -341,16 +341,16 @@ The backfill is the only part of this change that touches existing rows, and it 
 
 #### Automated
 
-- [x] 2.1 `npx supabase db reset` applies both migrations with no error
-- [x] 2.2 `npx supabase migration list --local` shows both migrations
-- [x] 2.3 `supabase/tests/seed_deck.sql` runs to completion with exit code 0
-- [x] 2.4 `supabase/tests/cards_rls.sql`, rewritten to assert count deltas, still passes
+- [x] 2.1 `npx supabase db reset` applies both migrations with no error — 83531c5
+- [x] 2.2 `npx supabase migration list --local` shows both migrations — 83531c5
+- [x] 2.3 `supabase/tests/seed_deck.sql` runs to completion with exit code 0 — 83531c5
+- [x] 2.4 `supabase/tests/cards_rls.sql`, rewritten to assert count deltas, still passes — 83531c5
 
 #### Manual
 
-- [x] 2.5 Positive assertion — ten cards, right owner, all due — passed
-- [x] 2.6 Idempotency assertion passed with the count unchanged
-- [x] 2.7 Resilience assertion passed: user created, deck empty, warning logged
+- [x] 2.5 Positive assertion — ten cards, right owner, all due — passed — 83531c5
+- [x] 2.6 Idempotency assertion passed with the count unchanged — 83531c5
+- [x] 2.7 Resilience assertion passed: user created, deck empty, warning logged — 83531c5
 
 ### Phase 3: Deck count on the dashboard
 
