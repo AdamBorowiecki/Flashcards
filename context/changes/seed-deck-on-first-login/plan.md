@@ -356,9 +356,9 @@ The backfill is the only part of this change that touches existing rows, and it 
 
 #### Automated
 
-- [ ] 3.1 `npx astro sync` then `npm run lint` passes
-- [ ] 3.2 Build still passes: `npm run build`
-- [ ] 3.3 Formatting is clean: `npm run format`
+- [x] 3.1 `npx astro sync` then `npm run lint` passes
+- [x] 3.2 Build still passes: `npm run build`
+- [x] 3.3 Formatting is clean: `npm run format`
 
 #### Manual
 
