@@ -39,13 +39,13 @@ A solo language learner has hundreds of cards and no signal for which ones need 
 
 ## At a glance
 
-| ID   | Change ID                       | Outcome (user can …)                                                      | Prerequisites | PRD refs                         | Status   |
-| ---- | ------------------------------- | ------------------------------------------------------------------------- | ------------- | -------------------------------- | -------- |
+| ID   | Change ID                       | Outcome (user can …)                                                      | Prerequisites | PRD refs                         | Status      |
+| ---- | ------------------------------- | ------------------------------------------------------------------------- | ------------- | -------------------------------- | ----------- |
 | F-01 | card-store-with-owner-isolation | (foundation) cards persist per learner, readable only by their owner      | —             | §Access Control, §Business Logic | in-progress |
 | S-01 | seed-deck-on-first-login        | sign in for the first time and find a starter deck already in the account | F-01          | FR-005                           | in-progress |
-| S-02 | srs-review-and-reschedule       | reveal a card's back, rate recall, and have the card rescheduled          | F-01, S-01    | US-01, FR-003, FR-004            | blocked  |
-| S-03 | review-queue-on-app-open        | open the app and land straight in the due queue, with the due count shown | S-02          | FR-002                           | proposed |
-| S-04 | create-own-flashcard            | create a flashcard with a front and a back                                | F-01          | FR-001                           | proposed |
+| S-02 | srs-review-and-reschedule       | reveal a card's back, rate recall, and have the card rescheduled          | F-01, S-01    | US-01, FR-003, FR-004            | blocked     |
+| S-03 | review-queue-on-app-open        | open the app and land straight in the due queue, with the due count shown | S-02          | FR-002                           | proposed    |
+| S-04 | create-own-flashcard            | create a flashcard with a front and a back                                | F-01          | FR-001                           | proposed    |
 
 ## Baseline
 

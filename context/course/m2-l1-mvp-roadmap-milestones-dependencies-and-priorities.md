@@ -286,7 +286,7 @@ The entire work scheme can be based on three types of actions and queries:
 - **Read** \- "show me open tasks in the 10xCards project with the label `ready`", "show me the acceptance criteria for TEN-14".
 - **Create** \- "create issue 'First gated generation loop' with acceptance criteria, dependencies, and label `north-star`".
 - **Update** \- "change status TEN-14 to `in-progress`", "add a comment with a link to the PR".
-![Diagram](https://images.przeprogramowani.pl/images/2026/05/Fz8TavamFNSCkdUPzM7oyAI.jpeg)
+  ![Diagram](https://images.przeprogramowani.pl/images/2026/05/Fz8TavamFNSCkdUPzM7oyAI.jpeg)
 
 In our lesson, we will see how easy it is to leverage the potential of the already mentioned Github CLI and the new MCP Linear:
 

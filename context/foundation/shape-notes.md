@@ -51,15 +51,19 @@ Account-based login via email + password or OAuth. A logged-in learner sees only
 ## Functional Requirements
 
 - FR-001: Learner can create a flashcard with a front and a back. Priority: must-have
+
   > Socrates: Counter-argument considered: curated/seed decks let users experience the review loop before burning out on blank-canvas creation. Resolution: FR-001 kept; a seed deck is added as FR-005 so day-one users can experience the full loop before creating their own cards.
 
 - FR-002: Learner can start a review session that auto-launches on app open when cards are due. Priority: must-have
+
   > Socrates: Counter-argument considered: a separate due-list view is redundant if the app auto-launches the review queue. Resolution: revised — app routes the learner directly into the review queue on open; due count surfaces as a session header rather than a separate list view.
 
 - FR-003: Learner can review a due card by seeing the front, then revealing the back. Priority: must-have
+
   > Socrates: Counter-argument considered: front-then-reveal tests recognition, not production recall — the SRS may be scheduling based on the wrong signal. Resolution: kept; recognition-based review is the industry standard for language flashcards. Active-recall mode (type before reveal) noted in Open Questions for v2.
 
 - FR-004: Learner can rate their recall on a reviewed card (missed it / got it / nailed it). Priority: must-have
+
   > Socrates: Counter-argument considered: three ratings add cognitive load — binary is faster and sufficient for v1. Resolution: three ratings preserved for SRS scheduling fidelity; labels changed from "forgot / hard / easy" to "missed it / got it / nailed it" to reduce friction and Anki association.
 
 - FR-005: Learner can access a built-in seed deck on first login. Priority: must-have
@@ -73,6 +77,7 @@ Account-based login via email + password or OAuth. A logged-in learner sees only
 - **Then** they see the card front, can reveal the back, rate their recall, and the app reschedules the card based on their rating
 
 #### Acceptance Criteria
+
 - A card rated "missed it" is rescheduled to reappear sooner than one rated "nailed it"
 - A card with no due date yet (just created) appears in the review queue at the time the SRS algorithm first schedules it
 - The session ends with visible confirmation that the review was recorded
@@ -80,12 +85,15 @@ Account-based login via email + password or OAuth. A logged-in learner sees only
 ## Success Criteria
 
 ### Primary
+
 - A logged-in learner can create a flashcard and, when they return later, see that card surfaced for review at the time the SRS algorithm scheduled it. Rating the card (forgot / hard / easy) reschedules it correctly. The full loop — create, schedule, review, reschedule — works end to end.
 
 ### Secondary
+
 - A learner can see their review streak or progress stats to track momentum over time.
 
 ### Guardrails
+
 - SRS scheduling must be accurate: a card rated "missed it" must reappear sooner than one rated "nailed it." A violation here breaks the product's core value proposition regardless of how well the rest of the UI works.
 
 ## Business Logic
@@ -112,6 +120,7 @@ The learner's recall rating is the sole user-provided input to the scheduling de
 ## Quality cross-check
 
 All elements present. No gaps. Status: accepted.
+
 - Access Control: present
 - Business Logic: present
 - Project artifacts: present

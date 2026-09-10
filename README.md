@@ -111,7 +111,7 @@ npx supabase stop
 
 The local Studio UI is available at `http://localhost:54323`.
 
-No database tables or migrations are required — this project uses Supabase Auth's built-in `auth.users` table only.
+Database schema lives in `supabase/migrations/`. Locally, `npx supabase db reset` applies every migration to the throwaway stack; against a linked cloud project, `npx supabase db push` applies the ones that are not there yet.
 
 ### Using a cloud Supabase project instead
 

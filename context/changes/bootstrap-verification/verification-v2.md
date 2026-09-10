@@ -40,10 +40,10 @@ A solo language learner building a 3-week after-hours MVP with account-based log
 
 ## Pre-scaffold verification
 
-| Signal      | Value    | Severity | Notes                                              |
-| ----------- | -------- | -------- | -------------------------------------------------- |
-| npm package | not run  | n/a      | cmd_template starts with `git clone` — skipped     |
-| GitHub repo | not run  | n/a      | `gh` CLI not available on this machine             |
+| Signal      | Value   | Severity | Notes                                          |
+| ----------- | ------- | -------- | ---------------------------------------------- |
+| npm package | not run | n/a      | cmd_template starts with `git clone` — skipped |
+| GitHub repo | not run | n/a      | `gh` CLI not available on this machine         |
 
 ## Scaffold log
 
@@ -86,21 +86,21 @@ error Exit handler never called!
 
 ## Hints recorded but not acted on
 
-| Hint                    | Value              |
-| ----------------------- | ------------------ |
-| bootstrapper_confidence | first-class        |
-| quality_override        | false              |
-| path_taken              | standard           |
-| self_check_answers      | null               |
-| team_size               | solo               |
-| deployment_target       | cloudflare-pages   |
-| ci_provider             | github-actions     |
+| Hint                    | Value                |
+| ----------------------- | -------------------- |
+| bootstrapper_confidence | first-class          |
+| quality_override        | false                |
+| path_taken              | standard             |
+| self_check_answers      | null                 |
+| team_size               | solo                 |
+| deployment_target       | cloudflare-pages     |
+| ci_provider             | github-actions       |
 | ci_default_flow         | auto-deploy-on-merge |
-| has_auth                | true               |
-| has_payments            | false              |
-| has_realtime            | false              |
-| has_ai                  | false              |
-| has_background_jobs     | false              |
+| has_auth                | true                 |
+| has_payments            | false                |
+| has_realtime            | false                |
+| has_ai                  | false                |
+| has_background_jobs     | false                |
 
 ## Next steps
 

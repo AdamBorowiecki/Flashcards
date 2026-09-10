@@ -38,10 +38,10 @@ hints:
 
 ## Pre-scaffold verification
 
-| Signal      | Value                                           | Severity | Notes                                                   |
-| ----------- | ----------------------------------------------- | -------- | ------------------------------------------------------- |
-| npm package | not run                                         | n/a      | cmd_template starts with `git clone`; npm check skipped |
-| GitHub repo | not run                                         | n/a      | gh CLI not installed; registry last_updated: 2026-05-01 (fresh) |
+| Signal      | Value   | Severity | Notes                                                           |
+| ----------- | ------- | -------- | --------------------------------------------------------------- |
+| npm package | not run | n/a      | cmd_template starts with `git clone`; npm check skipped         |
+| GitHub repo | not run | n/a      | gh CLI not installed; registry last_updated: 2026-05-01 (fresh) |
 
 ## Scaffold log
 
@@ -90,6 +90,7 @@ hints:
 Next: a future skill will set up agent context (CLAUDE.md, AGENTS.md). For now, your project is scaffolded and verified — happy hacking.
 
 Useful manual steps in the meantime:
+
 - Re-run was a no-op diff-wise (all .scaffold siblings are identical to the already-present files). You can safely delete all new `.scaffold` sibling files unless you want to inspect them.
 - Run `npm audit -- --use-system-ca` to attempt the audit with Windows' system CA store, bypassing the SSL issue.
 - The `.github/` directory contains a pre-wired GitHub Actions workflow — review it before pushing.

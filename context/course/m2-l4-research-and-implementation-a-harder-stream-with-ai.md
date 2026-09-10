@@ -159,6 +159,7 @@ Time for the last piece of the puzzle - a skill for analyzing the project state 
 From the content side:
 
 ![Diagram](https://images.przeprogramowani.pl/images/2026/05/F0gTavKsAp60kdUPw_PW0AI.jpeg)
+
 - **A group of subagents running in parallel.** The skill uses the `Explore` agent (fast search through files and patterns) and the `general-purpose` agent (deeper multi-file analysis with reasoning). The main agent splits the question into 2-4 areas and launches them in one message, then collects the results into a single report. Your main context window does not load the entire repo – the subagents do that on their own, and the conversation receives a synthesis with `file:line` references.
 - **Scope check before research.** If the question is ambiguous, the skill stops and asks via `AskUserQuestion` about the scope, depth, and area (e.g., "architecture & patterns" vs "integration points"). A short dialogue forces a decision before the agent starts burning tokens.
 - **The output lands on disk as `context/changes/<change-id>/research.md`.** A structured document with sections _Summary_, _Detailed Findings_ (each with a reference `file.ext:line`), _Code References_, _Architecture Insights_, and _Open Questions_.
