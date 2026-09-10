@@ -362,17 +362,17 @@ The backfill is the only part of this change that touches existing rows, and it 
 
 #### Manual
 
-- [ ] 3.4 A brand-new local account shows 10 on `/dashboard`
-- [ ] 3.5 The pre-existing test account also shows its count
-- [ ] 3.6 With Supabase unconfigured, `/` shows the config banner and `/dashboard` redirects cleanly
+- [x] 3.4 A brand-new local account shows 10 on `/dashboard`
+- [x] 3.5 The pre-existing test account also shows its count
+- [x] 3.6 With Supabase unconfigured, `/` shows the config banner and `/dashboard` redirects cleanly
 
 ### Phase 4: Push to cloud and record reality
 
 #### Automated
 
-- [ ] 4.1 `npx supabase migration list` shows the seeding migration in the Remote column
-- [ ] 4.2 Build still passes: `npm run build`
-- [ ] 4.3 Formatting is clean: `npm run format`
+- [x] 4.1 `npx supabase migration list` shows the seeding migration in the Remote column
+- [x] 4.2 Build still passes: `npm run build`
+- [x] 4.3 Formatting is clean: `npm run format`
 
 #### Manual
 
