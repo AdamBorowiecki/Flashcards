@@ -301,14 +301,14 @@ Local and cloud stay aligned because Phase 2 applies the migration locally and P
 
 #### Automated
 
-- [x] 3.1 `npx supabase migration list` shows the migration present remotely
-- [x] 3.2 Build still passes: `npm run build`
-- [x] 3.3 Formatting is clean: `npm run format`
+- [x] 3.1 `npx supabase migration list` shows the migration present remotely — f8d78d5
+- [x] 3.2 Build still passes: `npm run build` — f8d78d5
+- [x] 3.3 Formatting is clean: `npm run format` — f8d78d5
 
 #### Manual
 
-- [x] 3.4 The `cards` table is visible in the dashboard with RLS enabled
-- [x] 3.5 All four policies appear under the table's Auth Policies view
-- [x] 3.6 Sign-in on the live Worker still works
-- [x] 3.7 `README.md` no longer claims that no tables or migrations are required
-- [x] 3.8 `contract-surfaces.md` still shows per-card scheduling state as undecided
+- [x] 3.4 The `cards` table is visible in the dashboard with RLS enabled — f8d78d5
+- [x] 3.5 All four policies appear under the table's Auth Policies view — f8d78d5
+- [x] 3.6 Sign-in on the live Worker still works — f8d78d5
+- [x] 3.7 `README.md` no longer claims that no tables or migrations are required — f8d78d5
+- [x] 3.8 `contract-surfaces.md` still shows per-card scheduling state as undecided — f8d78d5
