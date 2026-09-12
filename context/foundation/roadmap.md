@@ -3,7 +3,7 @@ project: flashcards
 version: 1
 status: draft
 created: 2026-09-03
-updated: 2026-09-06
+updated: 2026-09-12
 prd_version: 1
 main_goal: low-complexity
 top_blocker: time
@@ -113,6 +113,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:**
   - What a learner with nothing due should see on open. Owner: user. Block: no.
+- **Entry point today:** `/api/auth/signin` redirects to `/` on success (`src/pages/api/auth/signin.ts:20`), and `src/pages/index.astro` is a static marketing page with no awareness of the session and no link onward — so a signed-in learner lands nowhere useful and has to type `/dashboard` by hand. Verified on the live Worker 2026-09-12 while closing S-01. This slice owns fixing it; S-01 deliberately did not.
 - **Risk:** Deliberately split from S-02 so the review interaction can be reached by an explicit link and hand-tested before routing behaviour is changed. Sequenced after it because there is no session to route into until reviewing works. The risk is turning the session header into the separate due-list view that FR-002's own resolution ruled out.
 - **Status:** proposed
 
