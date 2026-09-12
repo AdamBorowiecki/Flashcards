@@ -584,19 +584,19 @@ policy.
 
 #### Automated
 
-- [x] 3.1 `npx astro sync` then `npm run lint` passes
-- [x] 3.2 Build passes: `npm run build`
-- [x] 3.3 Formatting is clean: `npm run format`
+- [x] 3.1 `npx astro sync` then `npm run lint` passes — b06314e
+- [x] 3.2 Build passes: `npm run build` — b06314e
+- [x] 3.3 Formatting is clean: `npm run format` — b06314e
 
 #### Manual
 
-- [x] 3.4 `/review` shows a due card's front; revealing shows the back
-- [x] 3.5 Three ratings produce ascending `next_review_at`, days apart not minutes, confirmed in the local database
-- [x] 3.6 Rating three cards in a row is perceptibly immediate (`prd.md:78`)
-- [x] 3.7 The "nothing due" panel appears after the last card and on an empty arrival
-- [x] 3.8 A failed rating keeps the card and shows an error
-- [x] 3.9 A signed-out visit to `/review` redirects to `/auth/signin`
-- [x] 3.10 With Supabase unconfigured, `/review` degrades like `/dashboard`
+- [x] 3.4 `/review` shows a due card's front; revealing shows the back — b06314e
+- [x] 3.5 Three ratings produce ascending `next_review_at`, days apart not minutes, confirmed in the local database — b06314e
+- [x] 3.6 Rating three cards in a row is perceptibly immediate (`prd.md:78`) — b06314e
+- [x] 3.7 The "nothing due" panel appears after the last card and on an empty arrival — b06314e
+- [x] 3.8 A failed rating keeps the card and shows an error — b06314e
+- [x] 3.9 A signed-out visit to `/review` redirects to `/auth/signin` — b06314e
+- [x] 3.10 With Supabase unconfigured, `/review` degrades like `/dashboard` — b06314e
 
 ### Phase 4: Push to cloud and record reality
 
