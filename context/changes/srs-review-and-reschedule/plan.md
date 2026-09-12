@@ -556,29 +556,29 @@ policy.
 
 #### Automated
 
-- [x] 1.1 `ts-fsrs@^5.4.2` installs and the lockfile updates
-- [x] 1.2 Ordering check passes: `npm run verify:srs`
-- [x] 1.3 `npx astro sync` then `npm run lint` passes
-- [x] 1.4 Build passes: `npm run build`
-- [x] 1.5 Formatting is clean: `npm run format`
+- [x] 1.1 `ts-fsrs@^5.4.2` installs and the lockfile updates — c1608bd
+- [x] 1.2 Ordering check passes: `npm run verify:srs` — c1608bd
+- [x] 1.3 `npx astro sync` then `npm run lint` passes — c1608bd
+- [x] 1.4 Build passes: `npm run build` — c1608bd
+- [x] 1.5 Formatting is clean: `npm run format` — c1608bd
 
 #### Manual
 
-- [x] 1.6 The check is not vacuous: break the map, confirm a loud failure, revert
+- [x] 1.6 The check is not vacuous: break the map, confirm a loud failure, revert — c1608bd
 
 ### Phase 2: Apply and verify locally
 
 #### Automated
 
-- [ ] 2.1 `npx supabase db reset` applies all three migrations with no error
-- [ ] 2.2 `supabase/tests/cards_rls.sql` still passes unchanged
-- [ ] 2.3 `supabase/tests/seed_deck.sql` still passes unchanged
+- [x] 2.1 `npx supabase db reset` applies all three migrations with no error
+- [x] 2.2 `supabase/tests/cards_rls.sql` still passes unchanged
+- [x] 2.3 `supabase/tests/seed_deck.sql` still passes unchanged
 
 #### Manual
 
-- [ ] 2.4 A brand-new local signup still lands exactly ten cards
-- [ ] 2.5 Seeded cards' scheduling columns equal the `createEmptyCard()` values
-- [ ] 2.6 `next_review_at` is untouched on pre-existing rows
+- [x] 2.4 A brand-new local signup still lands exactly ten cards
+- [x] 2.5 Seeded cards' scheduling columns equal the `createEmptyCard()` values
+- [x] 2.6 `next_review_at` is untouched on pre-existing rows
 
 ### Phase 3: Review screen and rating endpoint
 
