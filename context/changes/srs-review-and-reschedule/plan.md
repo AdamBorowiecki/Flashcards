@@ -570,33 +570,33 @@ policy.
 
 #### Automated
 
-- [x] 2.1 `npx supabase db reset` applies all three migrations with no error
-- [x] 2.2 `supabase/tests/cards_rls.sql` still passes unchanged
-- [x] 2.3 `supabase/tests/seed_deck.sql` still passes unchanged
+- [x] 2.1 `npx supabase db reset` applies all three migrations with no error — a305dfa
+- [x] 2.2 `supabase/tests/cards_rls.sql` still passes unchanged — a305dfa
+- [x] 2.3 `supabase/tests/seed_deck.sql` still passes unchanged — a305dfa
 
 #### Manual
 
-- [x] 2.4 A brand-new local signup still lands exactly ten cards
-- [x] 2.5 Seeded cards' scheduling columns equal the `createEmptyCard()` values
-- [x] 2.6 `next_review_at` is untouched on pre-existing rows
+- [x] 2.4 A brand-new local signup still lands exactly ten cards — a305dfa
+- [x] 2.5 Seeded cards' scheduling columns equal the `createEmptyCard()` values — a305dfa
+- [x] 2.6 `next_review_at` is untouched on pre-existing rows — a305dfa
 
 ### Phase 3: Review screen and rating endpoint
 
 #### Automated
 
-- [ ] 3.1 `npx astro sync` then `npm run lint` passes
-- [ ] 3.2 Build passes: `npm run build`
-- [ ] 3.3 Formatting is clean: `npm run format`
+- [x] 3.1 `npx astro sync` then `npm run lint` passes
+- [x] 3.2 Build passes: `npm run build`
+- [x] 3.3 Formatting is clean: `npm run format`
 
 #### Manual
 
-- [ ] 3.4 `/review` shows a due card's front; revealing shows the back
-- [ ] 3.5 Three ratings produce ascending `next_review_at`, days apart not minutes, confirmed in the local database
-- [ ] 3.6 Rating three cards in a row is perceptibly immediate (`prd.md:78`)
-- [ ] 3.7 The "nothing due" panel appears after the last card and on an empty arrival
-- [ ] 3.8 A failed rating keeps the card and shows an error
-- [ ] 3.9 A signed-out visit to `/review` redirects to `/auth/signin`
-- [ ] 3.10 With Supabase unconfigured, `/review` degrades like `/dashboard`
+- [x] 3.4 `/review` shows a due card's front; revealing shows the back
+- [x] 3.5 Three ratings produce ascending `next_review_at`, days apart not minutes, confirmed in the local database
+- [x] 3.6 Rating three cards in a row is perceptibly immediate (`prd.md:78`)
+- [x] 3.7 The "nothing due" panel appears after the last card and on an empty arrival
+- [x] 3.8 A failed rating keeps the card and shows an error
+- [x] 3.9 A signed-out visit to `/review` redirects to `/auth/signin`
+- [x] 3.10 With Supabase unconfigured, `/review` degrades like `/dashboard`
 
 ### Phase 4: Push to cloud and record reality
 

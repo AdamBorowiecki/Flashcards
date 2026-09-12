@@ -1,0 +1,52 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import ReviewSession from "@/components/review/ReviewSession";
+import { EmptyQueue } from "@/components/review/EmptyQueue";
+import type { DueCard } from "@/components/review/ReviewSession";
+
+const { supabase } = Astro.locals;
+
+// Three reachable states, the same shape dashboard.astro uses: a queue, a failed query, or no
+// client at all. A failed query must not render as an empty queue -- "we could not ask" is not
+// "nothing is due", and the learner would be told to come back later for no reason.
+let queue: DueCard[] = [];
+let queueUnavailable = false;
+
+if (supabase) {
+  // No user_id predicate here on purpose: cards_select_own scopes the read.
+  // The (user_id, next_review_at) index already covers this exact query.
+  const { data, error } = await supabase
+    .from("cards")
+    .select("id, front, back")
+    .lte("next_review_at", new Date().toISOString())
+    .order("next_review_at", { ascending: true });
+
+  if (error) {
+    queueUnavailable = true;
+  } else {
+    queue = data;
+  }
+}
+---
+
+<Layout title="Review">
+  <div class="bg-cosmic flex min-h-screen items-center justify-center p-4">
+    <div class="w-full max-w-md rounded-2xl border border-white/10 bg-white/10 p-8 text-white backdrop-blur-xl">
+      <h1
+        class="mb-6 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-center text-2xl font-bold text-transparent"
+      >
+        Review
+      </h1>
+
+      {
+        queueUnavailable ? (
+          <p class="text-center text-blue-100/60">Your cards are unavailable right now.</p>
+        ) : queue.length > 0 ? (
+          <ReviewSession queue={queue} client:load />
+        ) : (
+          <EmptyQueue />
+        )
+      }
+    </div>
+  </div>
+</Layout>

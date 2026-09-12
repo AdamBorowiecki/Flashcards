@@ -36,6 +36,13 @@ if (supabase) {
         )
       }
       {deckUnavailable && <p class="mt-2 text-blue-100/60">Your deck size is unavailable right now.</p>}
+      {/* Interim entry point. S-03 routes the learner into the queue on open and will replace this. */}
+      <a
+        href="/review"
+        class="mt-6 inline-block rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
+      >
+        Start review
+      </a>
       <p class="mt-2 text-sm text-blue-100/50">This page is only for authenticated users.</p>
       <form method="POST" action="/api/auth/signout" class="mt-6">
         <button
