@@ -45,7 +45,7 @@ A solo language learner has hundreds of cards and no signal for which ones need 
 | S-01 | seed-deck-on-first-login        | sign in for the first time and find a starter deck already in the account | F-01          | FR-005                           | done        |
 | S-02 | srs-review-and-reschedule       | reveal a card's back, rate recall, and have the card rescheduled          | F-01, S-01    | US-01, FR-003, FR-004            | in-progress |
 | S-03 | review-queue-on-app-open        | open the app and land straight in the due queue, with the due count shown | S-02          | FR-002                           | proposed    |
-| S-04 | create-own-flashcard            | create a flashcard with a front and a back                                | F-01          | FR-001                           | proposed    |
+| S-04 | create-own-flashcard            | create a flashcard with a front and a back                                | F-01          | FR-001                           | ready       |
 
 ## Baseline
 
@@ -98,8 +98,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Prerequisites:** F-01, S-01
 - **Parallel with:** S-04
 - **Blockers:** —
-- **Unknowns:**
-  - Which scheduling scheme sets the next due date, and what per-card state it imposes — see Open Roadmap Question 5. Owner: user. Block: **yes**; the scheme decides the rating scale this slice submits, the state it persists, and what happens to a card's schedule when it is edited. Answering it is a design question, not something reading this repo can settle, so it needs dedicated research before this slice is planned.
+- **Unknowns:** — (resolved) Which scheduling scheme sets the next due date was Open Roadmap Question 5; research settled it on `ts-fsrs` (FSRS v6), with eight typed scheduling columns and the card's due date mapped onto the existing next-due timestamp. Evidence: `context/changes/srs-review-and-reschedule/external-research.md`, `ts-fsrs-docs.md`, ratified in `plan-brief.md`.
 - **Risk:** This is the slice the whole milestone exists to deliver, so it is placed as early as its Prerequisites allow. The scheduling rule lives here rather than in a separate foundation, because pulling it out ahead of the interface that exercises it would build a rule with nothing to check it against. The ordering guarantee between the three ratings needs an executable check inside this slice — the PRD calls a violation fatal to the product, and it is not visible by eye during a manual click-through.
 - **Status:** in-progress
 
@@ -127,17 +126,17 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Depends only on F-01, so it shares no dependency with the review chain and can be run alongside any of it — the one place in this milestone where work can genuinely proceed on two fronts. Sequenced after the review chain rather than before it because the starter deck already removes the need to author cards in order to reach the loop. What could go wrong is a newly created card landing without a due timestamp and never surfacing.
-- **Status:** proposed
+- **Status:** ready
 
 ## Backlog Handoff
 
-| Roadmap ID | Change ID                       | Suggested issue title                         | Ready for `/10x-plan` | Notes                                              |
-| ---------- | ------------------------------- | --------------------------------------------- | --------------------- | -------------------------------------------------- |
-| F-01       | card-store-with-owner-isolation | Card storage with per-learner isolation       | yes                   | Run `/10x-plan card-store-with-owner-isolation`    |
-| S-01       | seed-deck-on-first-login        | Starter deck present on first login           | no                    | Waiting on F-01                                    |
-| S-02       | srs-review-and-reschedule       | Review a due card and reschedule it by rating | no                    | Waiting on F-01, S-01. North star.                 |
-| S-03       | review-queue-on-app-open        | App opens straight into the due queue         | no                    | Waiting on S-02                                    |
-| S-04       | create-own-flashcard            | Learner creates their own flashcard           | no                    | Waiting on F-01; runs parallel to the review chain |
+| Roadmap ID | Change ID                       | Suggested issue title                         | Ready for `/10x-plan` | Notes                                             |
+| ---------- | ------------------------------- | --------------------------------------------- | --------------------- | ------------------------------------------------- |
+| F-01       | card-store-with-owner-isolation | Card storage with per-learner isolation       | yes                   | Run `/10x-plan card-store-with-owner-isolation`   |
+| S-01       | seed-deck-on-first-login        | Starter deck present on first login           | no                    | Waiting on F-01                                   |
+| S-02       | srs-review-and-reschedule       | Review a due card and reschedule it by rating | no                    | North star. Implemented; awaiting `/10x-archive`. |
+| S-03       | review-queue-on-app-open        | App opens straight into the due queue         | no                    | Waiting on S-02 to close                          |
+| S-04       | create-own-flashcard            | Learner creates their own flashcard           | yes                   | Run `/10x-plan create-own-flashcard`              |
 
 ## Open Roadmap Questions
 
@@ -145,11 +144,13 @@ Foundations below assume these are present and do NOT re-scaffold them.
 2. **Expected requests-per-second load?** — Owner: user. Block: no (small scale assumed). Carried from PRD Open Question 2; already absorbed by the platform decision in `infrastructure.md`.
 3. **Expected data volume per learner?** — Owner: user. Block: no (small scale assumed). Carried from PRD Open Question 3.
 4. **Active-recall mode — typing the answer before revealing it?** — Owner: user. Block: no. Carried from PRD Open Question 4; explicitly deferred past v1, revisit only if scheduling feels inaccurate to a real learner.
-5. **Which scheduling scheme sets the next due date?** — **OPEN — needs dedicated research.** Owner: user. Blocks: **S-02** (and therefore S-03 behind it). The PRD fixes only the ordering between the three ratings, never an algorithm. This is not a question the repository can answer: the scheme decides the rating scale S-02 submits, the per-card state that gets persisted, and the policy for what happens to a card's schedule when its content is edited.
+5. **Which scheduling scheme sets the next due date?** — **RESOLVED 2026-09-12.** Owner: user. Blocked S-02 (and S-03 behind it); no longer.
 
-   **Working direction (not a decision):** a step ladder of fixed intervals — card carries a rung index, "missed it" returns it to the first rung, "got it" advances one, "nailed it" advances two. It satisfies the ordering guarantee by construction rather than by tuning, and needs no library. Recorded here so the research has a baseline to argue against, **not** as a settled contract — SM-2 and FSRS were dismissed on a quick read, not on evidence.
+   **Decision: `ts-fsrs` (FSRS v6)** — the scheduler Anki itself now defaults to — with day-scale intervals only (no same-session repeats). The three PRD ratings map onto FSRS grades `Again` / `Good` / `Easy` (the fourth grade stays unused); per-card state is eight typed columns, with the card's due date mapped onto the existing next-due timestamp so one source of truth keeps the index and the access rules working. A card's schedule is left untouched when its content is edited.
 
-   Settle this with dedicated research before S-02 is planned. Deliberately kept out of `prd.md` and `CLAUDE.md` so nothing downstream treats it as fixed.
+   The roadmap's earlier working direction — a fixed step ladder with a rung index — was **not** adopted: it conflates "how hard is this card" with "how well do I know it now", the defect that pins cards at permanently short intervals in SM-2. It survives only as the fallback if `ts-fsrs` ever fails integration.
+
+   Evidence: `context/changes/srs-review-and-reschedule/external-research.md` (four candidates compared against cited sources), `ts-fsrs-docs.md` (live API), ratified in `plan-brief.md`. The rating-ordering guarantee is proven executably by `npm run verify:srs`.
 
 ## Parked
 

@@ -47,6 +47,18 @@ begin;
 --    they would prove nothing.
 -- ---------------------------------------------------------------------------
 
+-- Transaction-local baseline: how many cards already belong to somebody else.
+-- Captured BEFORE the fixture signup, so the foreign-row assertion below is a
+-- delta rather than an absolute. An absolute "no foreign rows exist" check only
+-- holds on a freshly reset database and turns into a false failure the moment
+-- anyone hand-tests the app against this stack -- which S-02's review hit for
+-- real. Same fix S-01's plan review applied to cards_rls.sql:57-62.
+select set_config(
+  'seed_deck.baseline_foreign',
+  (select count(*) from public.cards)::text,
+  true
+);
+
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at)
 values ('aaaaaaaa-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'learner-one@example.test', '', now(), now(), now());
 
@@ -54,6 +66,7 @@ do $$
 declare
   card_count integer;
   foreign_rows integer;
+  baseline_foreign integer;
   not_yet_due integer;
 begin
   select count(*) into card_count
@@ -68,8 +81,11 @@ begin
   from public.cards
   where user_id <> 'aaaaaaaa-0000-0000-0000-000000000001'::uuid;
 
-  if foreign_rows <> 0 then
-    raise exception 'seeding: % card(s) landed on somebody other than the new learner', foreign_rows;
+  baseline_foreign := current_setting('seed_deck.baseline_foreign')::integer;
+
+  if foreign_rows <> baseline_foreign then
+    raise exception 'seeding: % card(s) landed on somebody other than the new learner (foreign rows went % -> %)',
+      foreign_rows - baseline_foreign, baseline_foreign, foreign_rows;
   end if;
 
   select count(*) into not_yet_due
