@@ -42,7 +42,7 @@ A solo language learner has hundreds of cards and no signal for which ones need 
 | ID   | Change ID                       | Outcome (user can …)                                                      | Prerequisites | PRD refs                         | Status      |
 | ---- | ------------------------------- | ------------------------------------------------------------------------- | ------------- | -------------------------------- | ----------- |
 | F-01 | card-store-with-owner-isolation | (foundation) cards persist per learner, readable only by their owner      | —             | §Access Control, §Business Logic | in-progress |
-| S-01 | seed-deck-on-first-login        | sign in for the first time and find a starter deck already in the account | F-01          | FR-005                           | in-progress |
+| S-01 | seed-deck-on-first-login        | sign in for the first time and find a starter deck already in the account | F-01          | FR-005                           | done        |
 | S-02 | srs-review-and-reschedule       | reveal a card's back, rate recall, and have the card rescheduled          | F-01, S-01    | US-01, FR-003, FR-004            | blocked     |
 | S-03 | review-queue-on-app-open        | open the app and land straight in the due queue, with the due count shown | S-02          | FR-002                           | proposed    |
 | S-04 | create-own-flashcard            | create a flashcard with a front and a back                                | F-01          | FR-001                           | proposed    |
@@ -88,7 +88,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - What the starter deck actually contains — which language, how many cards. Owner: user. Block: no.
 - **Risk:** Sequenced before the review slice because reviewing needs cards to exist, and provisioning them is cheaper than building authoring first. Small by design. The thing that could go wrong is the seeding trigger firing more than once and duplicating a learner's deck.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-02: Review a due card and reschedule it by rating
 
@@ -167,4 +167,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Done
 
-(Empty on first generation. `/10x-archive` appends entries here when a change whose Change ID matches a roadmap item is archived. Do NOT pre-populate.)
+- **S-01: A learner signing in for the first time finds a built-in starter deck already in their account, so they can reach the review loop without authoring anything.** — Archived 2026-09-12 → `context/archive/2026-09-06-seed-deck-on-first-login/`. Lesson: —.

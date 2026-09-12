@@ -1,10 +1,10 @@
 ---
 change_id: seed-deck-on-first-login
 title: Starter deck present on first login
-status: implemented
+status: archived
 created: 2026-09-06
 updated: 2026-09-12
-archived_at: null
+archived_at: 2026-09-12T10:35:05Z
 ---
 
 ## Notes
