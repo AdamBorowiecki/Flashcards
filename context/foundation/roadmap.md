@@ -108,7 +108,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Change ID:** `review-queue-on-app-open`
 - **PRD refs:** FR-002
 - **Prerequisites:** S-02
-- **Parallel with:** S-04
+- **Parallel with:** S-04 — verified 2026-09-12 against the codebase, not just against the outcomes. Two contact points, both owned by S-04: `src/middleware.ts:4` (`PROTECTED_ROUTES`) and the navigation entry point. **S-03 merges second** and resolves any `PROTECTED_ROUTES` conflict in S-04's favour. S-03 may replace `src/pages/dashboard.astro` freely — S-04 is barred from it (see S-04 §Parallel with). Everything else is disjoint: S-03 alone touches `src/pages/index.astro`, `src/pages/api/auth/signin.ts:20`, `src/pages/review.astro`, `src/components/review/*`.
 - **Blockers:** —
 - **Unknowns:**
   - What a learner with nothing due should see on open. Owner: user. Block: no.
@@ -122,9 +122,13 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Change ID:** `create-own-flashcard`
 - **PRD refs:** FR-001
 - **Prerequisites:** F-01
-- **Parallel with:** S-01, S-02, S-03
+- **Parallel with:** S-01, S-02, S-03 — for S-03 this is verified against the codebase (2026-09-12) and carries three binding constraints:
+  - **S-04 must not touch `src/pages/dashboard.astro`.** Its "Start review" link is marked interim in the source and S-03 owns replacing the page. A create-card link placed there would vanish at merge with no git conflict — the silent failure named in `lessons.md` §"Parallel slices need declared file ownership". Hang the entry point on `src/components/Topbar.astro`, which is outside S-03's scope.
+  - **S-04 owns `src/middleware.ts`** — it is the slice that adds a protected route. S-03 merges second and yields on `PROTECTED_ROUTES`.
+  - **S-04 merges first.**
 - **Blockers:** —
 - **Unknowns:** —
+- **No migration needed:** `20260905163222_create_cards_table.sql` already carries `cards_insert_own`, `next_review_at timestamptz not null default now()`, and the blank front/back check constraints; `src/lib/srs.ts:71` already exports `emptySchedulingState()` for the initial scheduling columns. S-04 imports it and writes no SQL.
 - **Risk:** Depends only on F-01, so it shares no dependency with the review chain and can be run alongside any of it — the one place in this milestone where work can genuinely proceed on two fronts. Sequenced after the review chain rather than before it because the starter deck already removes the need to author cards in order to reach the loop. What could go wrong is a newly created card landing without a due timestamp and never surfacing.
 - **Status:** ready
 
