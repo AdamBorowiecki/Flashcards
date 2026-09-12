@@ -1,10 +1,10 @@
 ---
 change_id: card-store-with-owner-isolation
 title: Card storage with per-learner isolation
-status: impl_reviewed
+status: archived
 created: 2026-09-05
-updated: 2026-09-10
-archived_at: null
+updated: 2026-09-12
+archived_at: 2026-09-12T10:37:21Z
 ---
 
 ## Notes
