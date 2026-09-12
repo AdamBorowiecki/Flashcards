@@ -395,7 +395,40 @@ The review's recommended fix was explicitly to defer the choice to _this_ slice,
   columns at all; or
 - **Routing ratings through a `security definer` RPC**, so the scheduler is the only writer.
 
-Both remain open. Note the second option interacts with a lesson already paid for: a new `public`
+**Neither option works under this architecture, and the impact is smaller than the review's framing
+suggests.** Both points below were checked against the code, not inherited from the review.
+
+**Why neither fix is available.** `src/lib/supabase.ts:9` calls `createServerClient(SUPABASE_URL,
+SUPABASE_KEY, …)` with the learner's session cookies, and `SUPABASE_KEY` is the **anon key** — there is
+no `service_role` key anywhere in the project (`.env.example` declares two variables; `wrangler.jsonc`
+adds no vars or secrets). So the server queries Postgres **as the same `authenticated` role as the
+browser would**, with `auth.uid()` set to that learner. Therefore:
+
+- A **column-level grant** on `(front, back)` would revoke the scheduling columns from `authenticated` —
+  which is also what the rating endpoint is. It would block the application's own write.
+- A **`security definer` RPC** can write those columns, but PostgREST publishes it to `authenticated`, so
+  the learner can call it directly. If the RPC merely accepts an already-computed `next_review_at`, it is
+  a pass-through and protects nothing. Revoking execute from `authenticated` to stop that would again
+  block the endpoint, which holds no other identity.
+- An RPC would genuinely protect the schedule only if **it computed the interval itself, in SQL**.
+  `ts-fsrs` is TypeScript, so it cannot. (Note the irony: the roadmap's discarded fallback — a fixed step
+  ladder — _is_ expressible in SQL and would have been tamper-proof by construction. That is not an
+  argument to revisit it; FSRS won on `external-research.md`'s grounds. It is an argument that **choosing
+  a TypeScript scheduler forecloses "the scheduler is the sole writer"** unless a `service_role` key is
+  introduced as a Workers secret — a separate architectural decision, not a line in a migration.)
+
+**Why the exposure is minor anyway.** All four policies remain keyed on `auth.uid() = user_id`
+(`…create_cards_table.sql:35-56`), so the blast radius is a learner's **own** rows. The worst outcome is
+a solo learner changing when their own card comes back — cheating themselves out of the scheduling the
+product exists to provide. No other learner's data is reachable, and nothing about the app's operation
+breaks.
+
+**Consequence for the plan.** This is **not a fork to decide** — it is a limitation to state in one
+sentence and accept, with "hold a `service_role` key server-side" named as the only real remedy and
+deliberately deferred. Critically, that **frees Q1**: the column-level grant was the sole constraint
+making a single `jsonb` blob unattractive, and it is off the table.
+
+If a future change does introduce an RPC, the lesson already paid for still applies: a new `public`
 function is published as a PostgREST RPC by default, and `revoke ... from public` alone is insufficient —
 the three roles must be revoked **by name** (`supabase/migrations/20260906133232_seed_starter_deck.sql:48`,
 and the impl-review finding that produced it).
@@ -409,10 +442,10 @@ Numbering follows the seven questions at the end of the original section.
 string `state` — into a real `Card` with `Date` instances and enum values (`ts-fsrs-docs.md`,
 "Persistence"). That is exactly the shape a Postgres round-trip produces through `supabase-js`. **Both
 storage shapes work without hand-written coercion**, so the decision is a database-design decision
-(queryability, per-column constraints, whether the column-level grant in the section above is even
-expressible — it is not, over a single `jsonb` blob) rather than a library one. `/10x-plan` must argue it
-on those grounds. Note that `elapsed_days` is marked **deprecated** upstream; persisting it would be
-persisting dead state.
+(queryability, per-column constraints, migration cost) rather than a library one. `/10x-plan` must argue
+it on those grounds — and, per the grant section above, **without a column-level grant as a constraint**,
+since that option turned out not to be available under this architecture at all. Note that
+`elapsed_days` is marked **deprecated** upstream; persisting it would be persisting dead state.
 
 **Q2 — form POST vs. `fetch()`: the cost of `fetch()` is now precisely known.** Established convention is
 a native `<form method="POST" action="/api/...">`; React only validates and calls `preventDefault()` on
@@ -520,10 +553,12 @@ than depend on a default holding, but **this was never a risk to the ordering ch
 
 ### What is still genuinely open for `/10x-plan`
 
-1. **Column-level `update` grant on `(front, back)` vs. a `security definer` rating RPC** — inherited from
-   F-01's impl-review, and the choice constrains Q1: a column-level grant is not expressible over a single
-   `jsonb` blob.
-2. **Typed columns vs. one `jsonb` `review_state`** — argued on database grounds, not library grounds.
+1. ~~**Column-level `update` grant vs. a `security definer` rating RPC**~~ — **closed, not open.** Neither
+   is available while the app holds only the anon key and queries as the learner. The plan states the
+   limitation (a learner can reschedule their own cards; no other learner's data is reachable) and names
+   a server-held `service_role` key as the deferred remedy. See the grant section above.
+2. **Typed columns vs. one `jsonb` `review_state`** — argued on database grounds, and now **unconstrained**
+   by item 1.
 3. **Form POST + redirect vs. `fetch()` + JSON** — with the three concrete costs above now priced.
 4. **The ordering check's shape** — (c), (c) plus (a), or an argued case for (b).
 5. **Seed-time vs. lazy FSRS state**, and the stated way an empty deck would be noticed.
