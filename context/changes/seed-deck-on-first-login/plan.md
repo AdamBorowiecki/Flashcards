@@ -376,8 +376,8 @@ The backfill is the only part of this change that touches existing rows, and it 
 
 #### Manual
 
-- [ ] 4.4 The trigger appears on `auth.users` in the Supabase dashboard
-- [ ] 4.5 A fresh signup on the live Worker shows 10
-- [ ] 4.6 The pre-existing account shows a non-zero count
-- [ ] 4.7 Sign-in on the live Worker still works
-- [ ] 4.8 `contract-surfaces.md` still shows per-card scheduling state as undecided
+- [x] 4.4 The trigger appears on `auth.users` in the Supabase dashboard
+- [x] 4.5 A fresh signup on the live Worker shows 10
+- [x] 4.6 The pre-existing account shows a non-zero count
+- [x] 4.7 Sign-in on the live Worker still works
+- [x] 4.8 `contract-surfaces.md` still shows per-card scheduling state as undecided
