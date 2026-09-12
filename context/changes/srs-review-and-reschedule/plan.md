@@ -602,14 +602,14 @@ policy.
 
 #### Automated
 
-- [ ] 4.1 `npx supabase migration list` shows the scheduling migration in the Remote column
-- [ ] 4.2 Build passes: `npm run build`
-- [ ] 4.3 Formatting is clean: `npm run format`
-- [ ] 4.4 Ordering check still passes: `npm run verify:srs`
+- [x] 4.1 `npx supabase migration list` shows the scheduling migration in the Remote column
+- [x] 4.2 Build passes: `npm run build`
+- [x] 4.3 Formatting is clean: `npm run format`
+- [x] 4.4 Ordering check still passes: `npm run verify:srs`
 
 #### Manual
 
-- [ ] 4.5 A fresh signup on the live Worker still lands ten cards
-- [ ] 4.6 A full review session works on the live Worker
-- [ ] 4.7 The three ratings produce ordered `next_review_at` values in the cloud database
-- [ ] 4.8 `contract-surfaces.md` no longer describes per-card scheduling state as undecided
+- [x] 4.5 A fresh signup on the live Worker still lands ten cards
+- [x] 4.6 A full review session works on the live Worker
+- [x] 4.7 The three ratings produce ordered `next_review_at` values in the cloud database
+- [x] 4.8 `contract-surfaces.md` no longer describes per-card scheduling state as undecided
