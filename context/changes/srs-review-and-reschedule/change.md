@@ -3,7 +3,7 @@ change_id: srs-review-and-reschedule
 title: Review a due card and reschedule it by rating
 status: preparing
 created: 2026-09-06
-updated: 2026-09-06
+updated: 2026-09-12
 archived_at: null
 ---
 

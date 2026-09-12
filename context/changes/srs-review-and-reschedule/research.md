@@ -7,8 +7,9 @@ repository: Flashcards
 topic: "Where a card's data flows through this codebase today, and what a ts-fsrs-backed review-and-reschedule slice would have to plug into"
 tags: [research, codebase, cards, rls, astro-endpoints, react-islands, sql-tests, srs]
 status: complete
-last_updated: 2026-09-06
+last_updated: 2026-09-12
 last_updated_by: AdamBorowiecki
+last_updated_note: "Refreshed against HEAD 7b54dc8 after F-01 and S-01 were completed and archived; corrected four stale app-layer claims and closed six of seven open questions."
 ---
 
 # Research: What a ts-fsrs-backed review slice has to plug into
@@ -18,6 +19,15 @@ last_updated_by: AdamBorowiecki
 **Git Commit**: `566eace`
 **Branch**: `feature/m2l4`
 **Repository**: Flashcards
+
+> ⚠ **Read `## Follow-up Research 2026-09-12` at the end of this document before acting on anything
+> below.** F-01 and S-01 have since completed and been archived. Four claims in the Summary and
+> Detailed Findings are now **wrong** — most importantly "nothing in `src/` reads or writes
+> `public.cards`" and "`Astro.locals.supabase` does not exist". The follow-up section lists every
+> correction, closes six of the seven Open Questions, and adds the inherited table-level `update`
+> grant constraint. Note also that both prerequisite changes moved to `context/archive/` on
+> 2026-09-12, so `context/changes/<id>/…` paths cited below now resolve under
+> `context/archive/YYYY-MM-DD-<id>/…`.
 
 ## Research Question
 
@@ -309,3 +319,215 @@ the submit is a native browser navigation. `signout` is a bare `<form method="PO
    Seed time means touching S-01's migration; lazily means the read path must tolerate a null state.
 7. **`enable_fuzz`** — on by default, and it randomizes intervals, which would make an ordering assertion
    flaky. `fsrs({ enable_fuzz: false })` is documented; the test at minimum needs it off.
+
+---
+
+## Follow-up Research 2026-09-12T10:44Z
+
+**Git commit**: `7b54dc8` · **Branch**: `main` · **Researcher**: AdamBorowiecki
+
+**Why this section exists.** The research above was written at `566eace` on branch `feature/m2l4`, when
+F-01 and S-01 were both mid-flight. Both have since completed, pushed to the cloud, and been archived
+(`context/archive/2026-09-05-card-store-with-owner-isolation/`,
+`context/archive/2026-09-06-seed-deck-on-first-login/`). This pass re-verified the app-layer claims
+against HEAD and drove the seven Open Questions to closure where the evidence allows.
+
+**Scope of code drift since `566eace`** — deliberately small. `git diff --stat 566eace..HEAD -- src/ supabase/ package.json`:
+
+```
+src/env.d.ts              |  1 +
+src/middleware.ts         |  2 ++
+src/pages/dashboard.astro | 25 ++++++++++++++++++++++++-
+```
+
+No migration changed. No dependency changed. Everything in "Data layer", "SQL test harness", "Endpoint
+convention", "Lint is the real gate", and "Island convention" above is **still accurate as written**.
+
+### Corrections to the 2026-09-06 findings
+
+| #   | Claim above                                                   | Verdict       | Evidence at HEAD                                                                                      |
+| --- | ------------------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------- |
+| 1   | "`src/env.d.ts` declares only `user`"                         | **WRONG now** | `src/env.d.ts:4` also declares `supabase: ReturnType<typeof import("@/lib/supabase").createClient>`   |
+| 2   | "middleware builds a client and **discards** it"              | **WRONG now** | `src/middleware.ts:9` — `context.locals.supabase = supabase;`                                         |
+| 3   | "the dashboard has no deck count"                             | **WRONG now** | `src/pages/dashboard.astro:9-19` queries `cards` and renders it                                       |
+| 4   | "**nothing in `src/` reads or writes `public.cards`**"        | **WRONG now** | `src/pages/dashboard.astro:13` — `supabase.from("cards").select("*", { count: "exact", head: true })` |
+| 5   | "shadcn/ui holds exactly one primitive"                       | **STALE**     | `src/components/ui/` holds `button.tsx` **and** `LibBadge.astro`                                      |
+| 6   | "`PROTECTED_ROUTES = ["/dashboard"]`; `/api/*` gets no guard" | CONFIRMED     | `src/middleware.ts:4`                                                                                 |
+| 7   | "there is no `fetch()` anywhere in `src/`"                    | CONFIRMED     | `grep -rn "fetch(" src/` returns no matches                                                           |
+| 8   | "no generated DB types, no `supabase gen types` script"       | CONFIRMED     | no `database.types.ts`; `package.json:5-13` scripts unchanged                                         |
+| 9   | "no JS test runner; CI runs none"                             | CONFIRMED     | no `test` script, no vitest/jest/playwright; CI is `astro sync` then `lint` then `build`              |
+
+**What corrections 1-4 change for the plan.** The first consumer of `public.cards` already exists, so
+this slice is no longer writing the first query — but it is still writing the first **mutation**, and
+still the first typed row shape. Two consequences:
+
+- A page or endpoint in this slice does **not** need to build its own client or land `locals.supabase`
+  itself — that work is done. It can read `Astro.locals.supabase`, which is typed **nullable** because
+  `createClient` returns `null` when unconfigured (`src/lib/supabase.ts:6-8`); the null-guard at
+  `src/pages/dashboard.astro:11` is the established shape.
+- But **no `/api/*` endpoint uses `locals` at all** — `grep -rn "locals" src/pages/api/` returns nothing;
+  all three auth endpoints call `createClient(...)` themselves. So "endpoint reads `locals.supabase`"
+  would be a first, and the plan should say which it does rather than assume.
+
+### The constraint this slice inherits from F-01's implementation review
+
+**This is the most consequential finding of this pass** and it is not in the research above.
+
+`supabase/migrations/20260905163222_create_cards_table.sql:31` grants `update` at **table level**:
+
+```sql
+grant select, insert, update, delete on public.cards to authenticated;
+```
+
+F-01's implementation review flagged what that means once scheduling state exists
+(`context/archive/2026-09-05-card-store-with-owner-isolation/reviews/impl-review.md:166-177`):
+
+> "The table-level `update` grant lets a learner PATCH any column of their own row through the anon key.
+> Harmless while the table carries no scheduling state. **But S-02 adds it**, and `CLAUDE.md` calls the
+> SRS ordering invariant non-negotiable... Once `next_review_at` is algorithm-owned, a learner can set it
+> directly and bypass the scheduler. Not a defect in F-01 — the plan deliberately deferred scheduling
+> state — **but it is a constraint S-02's plan inherits and should decide deliberately rather than
+> discover**."
+
+The review's recommended fix was explicitly to defer the choice to _this_ slice, between:
+
+- **A column-level update grant** restricted to `front` and `back`, so PostgREST cannot write scheduling
+  columns at all; or
+- **Routing ratings through a `security definer` RPC**, so the scheduler is the only writer.
+
+Both remain open. Note the second option interacts with a lesson already paid for: a new `public`
+function is published as a PostgREST RPC by default, and `revoke ... from public` alone is insufficient —
+the three roles must be revoked **by name** (`supabase/migrations/20260906133232_seed_starter_deck.sql:48`,
+and the impl-review finding that produced it).
+
+### Closing the Open Questions
+
+Numbering follows the seven questions at the end of the original section.
+
+**Q1 — typed columns vs. one `jsonb` `review_state`: NOT a library constraint.** `ts-fsrs` ships
+`TypeConvert.card()`, which normalizes a loose input — epoch-millisecond numbers, ISO strings, even a
+string `state` — into a real `Card` with `Date` instances and enum values (`ts-fsrs-docs.md`,
+"Persistence"). That is exactly the shape a Postgres round-trip produces through `supabase-js`. **Both
+storage shapes work without hand-written coercion**, so the decision is a database-design decision
+(queryability, per-column constraints, whether the column-level grant in the section above is even
+expressible — it is not, over a single `jsonb` blob) rather than a library one. `/10x-plan` must argue it
+on those grounds. Note that `elapsed_days` is marked **deprecated** upstream; persisting it would be
+persisting dead state.
+
+**Q2 — form POST vs. `fetch()`: the cost of `fetch()` is now precisely known.** Established convention is
+a native `<form method="POST" action="/api/...">`; React only validates and calls `preventDefault()` on
+failure (`src/components/auth/SignInForm.tsx:36-43`). Switching a rating to `fetch()` costs three things
+concretely: `useFormStatus()` stops working (it tracks a parent `<form>`'s pending state, not arbitrary
+requests — `src/components/auth/SubmitButton.tsx:2,12`), so pending state needs its own `useState`; the
+`?error=` redirect idiom no longer applies, so the endpoint must return JSON and the island must render
+errors itself; and the session lookup still has to happen server-side regardless, because
+`SUPABASE_URL` / `SUPABASE_KEY` are declared `context: "server", access: "secret"`
+(`astro.config.mjs:19-20`) and there is no `PUBLIC_`-prefixed variable — **a client-side Supabase call is
+not merely unprecedented here, it is unsupported by the current config.** Still a genuine fork; the plan
+must pick, not drift.
+
+**Q3 — JSON contract and status codes: confirmed to have zero precedent.** All three auth endpoints
+export `POST: APIRoute`, parse `formData()`, and return **only** `context.redirect(...)`. No
+`Response.json()` anywhere in `src/`; no explicit status code anywhere in `src/`. Whatever this slice
+does is the first of its kind and must be stated outright.
+
+**Q4 — explicit `locals.user` guard: recommendation stands, and the reason sharpens.** No `/api/*`
+endpoint reads `locals` today. RLS does block a cross-learner write, but it does so by reporting **zero
+rows updated**, which is indistinguishable from a stale or bogus card id — so an endpoint without its own
+guard cannot tell "not yours" from "does not exist" and cannot return a truthful response. Under the
+lessons register this matters: an unguarded failure that returns a success-shaped response is precisely a
+swallowed failure with no defined way to be noticed (`context/foundation/lessons.md:12-17`).
+
+**Q5 — how to assert the ordering executably: the fork is now mapped, with costs.** Two facts frame it.
+First, a JS test runner would be a **new decision, not house style** — both archived plans say so in
+terms: _"There is no test framework in this repo, and this change deliberately does not add one"_
+(`context/archive/2026-09-05-card-store-with-owner-isolation/plan.md:230`), and S-01 inherited it
+explicitly (`context/archive/2026-09-06-seed-deck-on-first-login/plan.md:44,280`). Second, CI runs no
+tests and cannot start a database (`.github/workflows/ci.yml`), and wiring one in was twice deferred as
+_"a separate decision and a separate change"_
+(`context/archive/2026-09-05-card-store-with-owner-isolation/plan.md:247`).
+
+| Option                                                                             | Cost                                                           | Precedent                                                                                   | Catches a **mapping** bug (`got_it` to `Rating.Hard`)? | CI-able today         |
+| ---------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------ | --------------------- |
+| **(c) plain `node` script, no framework** — imports `ts-fsrs`, asserts ordering    | none; `ts-fsrs` is already a runtime dep, no config, no devDep | closest extension of house style: committed script + documented run command, exits non-zero | **yes**, directly and fast                             | **yes**, trivially    |
+| **(a) new `supabase/tests/*.sql`** asserting on endpoint-produced `next_review_at` | needs a driver outside the script to exercise the endpoint     | matches the SQL-only convention exactly                                                     | only end to end; cannot localise mapping vs. wiring    | no — needs a DB in CI |
+| **(b) vitest / node:test**                                                         | new devDependency, config, script                              | **breaks** precedent — first framework in the repo                                          | yes                                                    | yes                   |
+| **(d) pure-SQL, no library call**                                                  | cheapest                                                       | follows the letter of house style                                                           | **no** — proves neither library nor mapping            | no                    |
+
+The evidence favours **(c)**, optionally complemented by **(a)** — mirroring the two-script precedent
+already set by `cards_rls.sql` + `seed_deck.sql`, where one script proves the rule and another proves the
+wiring. **(b)** buys nothing over **(c)** unless more JS tests are imminent. This is a decision for
+`plan-brief.md`, not a conclusion of research.
+
+Three constraints any such script inherits from prior reviews:
+
+- **No vacuous passes.** The first assertion must be a _positive_ one that fails on an empty database — a
+  named convention at `supabase/tests/cards_rls.sql:78-80`, made a required first-position step by
+  `context/archive/2026-09-05-card-store-with-owner-isolation/reviews/plan-review.md:104`. F-01 still
+  carries an unresolved finding of exactly this shape (impl-review F4, **PENDING**): its write path is
+  proven only negatively, because `insufficient_privilege` fires both for "RLS correctly denied" and for
+  "grant missing".
+- **Counts and timestamps must be deltas, never absolutes.** S-01's seeding trigger broke every absolute
+  count in the F-01 suite — a CRITICAL finding
+  (`context/archive/2026-09-06-seed-deck-on-first-login/reviews/plan-review.md:29-40`) fixed by the
+  `set_config('cards_rls.baseline_a', ...)` baseline pattern at `supabase/tests/cards_rls.sql:57-62`. Any
+  new script must compare rows created within its own run.
+- **Never point a destructive verification script at the cloud project** — the CRITICAL from F-01's plan
+  review (`context/archive/2026-09-05-card-store-with-owner-isolation/reviews/plan-review.md:25-36`).
+
+**Q6 — seed-time vs. lazy FSRS state: the failure mode is now traced precisely.** Both writes into
+`public.cards` name only `(user_id, front, back)` — the trigger insert at
+`supabase/migrations/20260906133232_seed_starter_deck.sql:67-69` and the backfill at `:95-101`. They
+behave _differently_ under a new `not null` column with no default:
+
+- The **trigger** insert fails, is caught by `exception when others` (`:72-81`), downgraded to a
+  `raise warning`, and signup proceeds. User-visible symptom: **an account that is created successfully
+  and arrives with an empty deck**, with nothing in the UI to say so. This is the lessons-register case
+  verbatim (`context/foundation/lessons.md:12-17` — _"It logs a warning" is not a way to be noticed_).
+- The **backfill** has no handler at all, so the same violation aborts the migration and fails
+  `supabase db push` loudly.
+
+So the two halves of the same seeding migration fail in opposite directions. Any new column must either
+carry a workable `default` or both statements must be updated — and whichever route the plan takes, it
+owes a stated way the empty-deck outcome would be noticed.
+
+**Q7 — `enable_fuzz`: CLOSED, and the earlier premise was wrong.** This research and
+`external-research.md` both stated that fuzz is **on by default** and would make an ordering assertion
+flaky. Upstream documents `enable_fuzz: false` as the default (`ts-fsrs-docs.md`, "FSRSParameters"). The
+deterministic path is already the default; a verification script should still pass it explicitly rather
+than depend on a default holding, but **this was never a risk to the ordering check.**
+
+### New findings not present in the earlier pass
+
+- **`supabase/config.toml:65` points `[db.seed] sql_paths` at `./seed.sql`, which does not exist**
+  (`ls supabase/` gives `config.toml`, `migrations`, `snippets`, `tests`). Confirmed absent. Harmless
+  today — all seeding is via the migration trigger — but it is a dangling config reference that a plan
+  touching seeding will trip over.
+- **`supabase/snippets/` exists and is empty.**
+- **`supabase/config.toml:5` sets `project_id = "10x-astro-starter"`**, which is why the local container
+  is `supabase_db_10x-astro-starter` and not `...flashcards`. Unchanged from the starter template; the run
+  command in every test header depends on it.
+- **`cards_update_own` carries both `using` and `with check`**
+  (`supabase/migrations/20260905163222_create_cards_table.sql:47-51`), so the rating write is already
+  permitted and cannot reassign a row to another learner. No policy change is needed for this slice — only
+  the _grant_ question above.
+- **Migration house style, for the third migration**: filename `YYYYMMDDHHMMSS_snake_case.sql`; a header
+  comment naming the roadmap/PRD id and stating what is deliberately deferred; inline comments that
+  justify non-obvious decisions; **no `if not exists` guards on DDL** (forward-only history), with
+  idempotency applied only to data-mutating statements (`where not exists`, the early-exit guard at
+  `supabase/migrations/20260906133232_seed_starter_deck.sql:63`); grants, RLS and policies always follow
+  the object they secure.
+
+### What is still genuinely open for `/10x-plan`
+
+1. **Column-level `update` grant on `(front, back)` vs. a `security definer` rating RPC** — inherited from
+   F-01's impl-review, and the choice constrains Q1: a column-level grant is not expressible over a single
+   `jsonb` blob.
+2. **Typed columns vs. one `jsonb` `review_state`** — argued on database grounds, not library grounds.
+3. **Form POST + redirect vs. `fetch()` + JSON** — with the three concrete costs above now priced.
+4. **The ordering check's shape** — (c), (c) plus (a), or an argued case for (b).
+5. **Seed-time vs. lazy FSRS state**, and the stated way an empty deck would be noticed.
+6. **Whether `reps` / `lapses` are persisted in v1** — cheap to store, out of scope to surface
+   (`context/foundation/roadmap.md`, Parked).
+7. **The edit policy stance** (`forget()` vs. keep memory state) — stated, not implemented; card editing is
+   not in this milestone.
