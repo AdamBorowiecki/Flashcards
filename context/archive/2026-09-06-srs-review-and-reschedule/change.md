@@ -1,10 +1,10 @@
 ---
 change_id: srs-review-and-reschedule
 title: Review a due card and reschedule it by rating
-status: impl_reviewed
+status: archived
 created: 2026-09-06
 updated: 2026-09-12
-archived_at: null
+archived_at: 2026-09-12T16:55:15Z
 ---
 
 ## Notes

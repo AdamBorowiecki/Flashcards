@@ -39,13 +39,13 @@ A solo language learner has hundreds of cards and no signal for which ones need 
 
 ## At a glance
 
-| ID   | Change ID                       | Outcome (user can …)                                                      | Prerequisites | PRD refs                         | Status      |
-| ---- | ------------------------------- | ------------------------------------------------------------------------- | ------------- | -------------------------------- | ----------- |
-| F-01 | card-store-with-owner-isolation | (foundation) cards persist per learner, readable only by their owner      | —             | §Access Control, §Business Logic | done        |
-| S-01 | seed-deck-on-first-login        | sign in for the first time and find a starter deck already in the account | F-01          | FR-005                           | done        |
-| S-02 | srs-review-and-reschedule       | reveal a card's back, rate recall, and have the card rescheduled          | F-01, S-01    | US-01, FR-003, FR-004            | in-progress |
-| S-03 | review-queue-on-app-open        | open the app and land straight in the due queue, with the due count shown | S-02          | FR-002                           | proposed    |
-| S-04 | create-own-flashcard            | create a flashcard with a front and a back                                | F-01          | FR-001                           | ready       |
+| ID   | Change ID                       | Outcome (user can …)                                                      | Prerequisites | PRD refs                         | Status   |
+| ---- | ------------------------------- | ------------------------------------------------------------------------- | ------------- | -------------------------------- | -------- |
+| F-01 | card-store-with-owner-isolation | (foundation) cards persist per learner, readable only by their owner      | —             | §Access Control, §Business Logic | done     |
+| S-01 | seed-deck-on-first-login        | sign in for the first time and find a starter deck already in the account | F-01          | FR-005                           | done     |
+| S-02 | srs-review-and-reschedule       | reveal a card's back, rate recall, and have the card rescheduled          | F-01, S-01    | US-01, FR-003, FR-004            | done     |
+| S-03 | review-queue-on-app-open        | open the app and land straight in the due queue, with the due count shown | S-02          | FR-002                           | proposed |
+| S-04 | create-own-flashcard            | create a flashcard with a front and a back                                | F-01          | FR-001                           | ready    |
 
 ## Baseline
 
@@ -98,9 +98,9 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Prerequisites:** F-01, S-01
 - **Parallel with:** S-04
 - **Blockers:** —
-- **Unknowns:** — (resolved) Which scheduling scheme sets the next due date was Open Roadmap Question 5; research settled it on `ts-fsrs` (FSRS v6), with eight typed scheduling columns and the card's due date mapped onto the existing next-due timestamp. Evidence: `context/changes/srs-review-and-reschedule/external-research.md`, `ts-fsrs-docs.md`, ratified in `plan-brief.md`.
+- **Unknowns:** — (resolved) Which scheduling scheme sets the next due date was Open Roadmap Question 5; research settled it on `ts-fsrs` (FSRS v6), with eight typed scheduling columns and the card's due date mapped onto the existing next-due timestamp. Evidence: `context/archive/2026-09-06-srs-review-and-reschedule/external-research.md`, `ts-fsrs-docs.md`, ratified in `plan-brief.md`.
 - **Risk:** This is the slice the whole milestone exists to deliver, so it is placed as early as its Prerequisites allow. The scheduling rule lives here rather than in a separate foundation, because pulling it out ahead of the interface that exercises it would build a rule with nothing to check it against. The ordering guarantee between the three ratings needs an executable check inside this slice — the PRD calls a violation fatal to the product, and it is not visible by eye during a manual click-through.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-03: App opens straight into the due queue
 
@@ -150,7 +150,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
    The roadmap's earlier working direction — a fixed step ladder with a rung index — was **not** adopted: it conflates "how hard is this card" with "how well do I know it now", the defect that pins cards at permanently short intervals in SM-2. It survives only as the fallback if `ts-fsrs` ever fails integration.
 
-   Evidence: `context/changes/srs-review-and-reschedule/external-research.md` (four candidates compared against cited sources), `ts-fsrs-docs.md` (live API), ratified in `plan-brief.md`. The rating-ordering guarantee is proven executably by `npm run verify:srs`.
+   Evidence: `context/archive/2026-09-06-srs-review-and-reschedule/external-research.md` (four candidates compared against cited sources), `ts-fsrs-docs.md` (live API), ratified in `plan-brief.md`. The rating-ordering guarantee is proven executably by `npm run verify:srs`.
 
 ## Parked
 
@@ -170,3 +170,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 - **S-01: A learner signing in for the first time finds a built-in starter deck already in their account, so they can reach the review loop without authoring anything.** — Archived 2026-09-12 → `context/archive/2026-09-06-seed-deck-on-first-login/`. Lesson: —.
 - **F-01: (foundation) a card record persists with its front, its back, its owning learner, and the timestamp at which it next becomes due; a learner can read and write only their own cards, enforced at the database layer rather than in application code.** — Archived 2026-09-12 → `context/archive/2026-09-05-card-store-with-owner-isolation/`. Lesson: —.
+- **S-02: A learner sees a due card's front, reveals its back, rates their recall as missed it / got it / nailed it, and the card is rescheduled so that "missed it" returns sooner than "got it", which returns sooner than "nailed it".** — Archived 2026-09-12 → `context/archive/2026-09-06-srs-review-and-reschedule/`. Lesson: —.
