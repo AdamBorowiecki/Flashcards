@@ -39,13 +39,13 @@ A solo language learner has hundreds of cards and no signal for which ones need 
 
 ## At a glance
 
-| ID   | Change ID                       | Outcome (user can …)                                                      | Prerequisites | PRD refs                         | Status   |
-| ---- | ------------------------------- | ------------------------------------------------------------------------- | ------------- | -------------------------------- | -------- |
-| F-01 | card-store-with-owner-isolation | (foundation) cards persist per learner, readable only by their owner      | —             | §Access Control, §Business Logic | done     |
-| S-01 | seed-deck-on-first-login        | sign in for the first time and find a starter deck already in the account | F-01          | FR-005                           | done     |
-| S-02 | srs-review-and-reschedule       | reveal a card's back, rate recall, and have the card rescheduled          | F-01, S-01    | US-01, FR-003, FR-004            | blocked  |
-| S-03 | review-queue-on-app-open        | open the app and land straight in the due queue, with the due count shown | S-02          | FR-002                           | proposed |
-| S-04 | create-own-flashcard            | create a flashcard with a front and a back                                | F-01          | FR-001                           | proposed |
+| ID   | Change ID                       | Outcome (user can …)                                                      | Prerequisites | PRD refs                         | Status      |
+| ---- | ------------------------------- | ------------------------------------------------------------------------- | ------------- | -------------------------------- | ----------- |
+| F-01 | card-store-with-owner-isolation | (foundation) cards persist per learner, readable only by their owner      | —             | §Access Control, §Business Logic | done        |
+| S-01 | seed-deck-on-first-login        | sign in for the first time and find a starter deck already in the account | F-01          | FR-005                           | done        |
+| S-02 | srs-review-and-reschedule       | reveal a card's back, rate recall, and have the card rescheduled          | F-01, S-01    | US-01, FR-003, FR-004            | in-progress |
+| S-03 | review-queue-on-app-open        | open the app and land straight in the due queue, with the due count shown | S-02          | FR-002                           | proposed    |
+| S-04 | create-own-flashcard            | create a flashcard with a front and a back                                | F-01          | FR-001                           | proposed    |
 
 ## Baseline
 
@@ -101,7 +101,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Which scheduling scheme sets the next due date, and what per-card state it imposes — see Open Roadmap Question 5. Owner: user. Block: **yes**; the scheme decides the rating scale this slice submits, the state it persists, and what happens to a card's schedule when it is edited. Answering it is a design question, not something reading this repo can settle, so it needs dedicated research before this slice is planned.
 - **Risk:** This is the slice the whole milestone exists to deliver, so it is placed as early as its Prerequisites allow. The scheduling rule lives here rather than in a separate foundation, because pulling it out ahead of the interface that exercises it would build a rule with nothing to check it against. The ordering guarantee between the three ratings needs an executable check inside this slice — the PRD calls a violation fatal to the product, and it is not visible by eye during a manual click-through.
-- **Status:** blocked
+- **Status:** in-progress
 
 ### S-03: App opens straight into the due queue
 
