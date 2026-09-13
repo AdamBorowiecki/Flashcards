@@ -404,36 +404,36 @@ are indistinguishable in shape from seeded ones.
 
 #### Automated
 
-- [x] 1.1 Column contract holds: `npm run verify:cards`
-- [x] 1.2 Rating ordering still holds after the `srs.ts` edit: `npm run verify:srs`
+- [x] 1.1 Column contract holds: `npm run verify:cards` — b2dd1cd
+- [x] 1.2 Rating ordering still holds after the `srs.ts` edit: `npm run verify:srs` — b2dd1cd
 - [ ] 1.3 Type checking passes: `npx astro sync && npx astro check` — not passing: blocked by a pre-existing ts(2345) in `src/lib/srs.ts:114` (S-02 scheduling code, untouched by this change); CI gate is `lint` + `build`
-- [x] 1.4 Linting passes: `npm run lint`
-- [x] 1.5 Build passes: `npm run build`
+- [x] 1.4 Linting passes: `npm run lint` — b2dd1cd
+- [x] 1.5 Build passes: `npm run build` — b2dd1cd
 
 #### Manual
 
-- [x] 1.6 `curl -X POST /api/cards` with a valid body and a session cookie returns 201 and a real `id`
-- [x] 1.7 The same call with no session returns 401 JSON, not a 302
-- [x] 1.8 Blank front, blank back, and a 501-character side each return 400 with a message naming the problem
-- [x] 1.9 The created row carries `state = 0`, `last_review = null`, and `next_review_at ≈ now`
-- [x] 1.10 Rating an existing card via `/review` still works
+- [x] 1.6 `curl -X POST /api/cards` with a valid body and a session cookie returns 201 and a real `id` — b2dd1cd
+- [x] 1.7 The same call with no session returns 401 JSON, not a 302 — b2dd1cd
+- [x] 1.8 Blank front, blank back, and a 501-character side each return 400 with a message naming the problem — b2dd1cd
+- [x] 1.9 The created row carries `state = 0`, `last_review = null`, and `next_review_at ≈ now` — b2dd1cd
+- [x] 1.10 Rating an existing card via `/review` still works — b2dd1cd
 
 ### Phase 2: Create-card page and route guard
 
 #### Automated
 
-- [ ] 2.1 Type checking passes: `npx astro sync && npx astro check`
-- [ ] 2.2 Linting passes: `npm run lint`
-- [ ] 2.3 Build passes: `npm run build`
+- [ ] 2.1 Type checking passes: `npx astro sync && npx astro check` — not passing: same pre-existing ts(2345) in `src/lib/srs.ts:114` as 1.3; no new type errors from this phase
+- [x] 2.2 Linting passes: `npm run lint`
+- [x] 2.3 Build passes: `npm run build`
 
 #### Manual
 
-- [ ] 2.4 Signed out, visiting `/cards/new` redirects to `/auth/signin`
-- [ ] 2.5 Adding a card clears the form, moves focus to the front field, and shows the confirmation with the counter
-- [ ] 2.6 Adding three cards in a row works without a page reload, and the counter reads 3
-- [ ] 2.7 A submitted blank field is rejected without a network call and the typed text survives
-- [ ] 2.8 Killing the network mid-submit shows an error, keeps both fields, and does not increment the counter
-- [ ] 2.9 The added cards appear in the queue at `/review` on the next load
+- [x] 2.4 Signed out, visiting `/cards/new` redirects to `/auth/signin`
+- [x] 2.5 Adding a card clears the form, moves focus to the front field, and shows the confirmation with the counter
+- [x] 2.6 Adding three cards in a row works without a page reload, and the counter reads 3
+- [x] 2.7 A submitted blank field is rejected without a network call and the typed text survives
+- [x] 2.8 Killing the network mid-submit shows an error, keeps both fields, and does not increment the counter
+- [x] 2.9 The added cards appear in the queue at `/review` on the next load
 
 ### Phase 3: Entry point and hand-off to S-03
 
