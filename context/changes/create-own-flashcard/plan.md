@@ -439,14 +439,14 @@ are indistinguishable in shape from seeded ones.
 
 #### Automated
 
-- [x] 3.1 Linting passes: `npm run lint`
-- [x] 3.2 Formatting is clean: `npm run format` leaves no diff — verified with `prettier --check` over every file this slice touched; repo-wide `npm run format` also reformats the pre-existing unformatted `context/course/m2-l5-…md`, which was reverted and left alone
-- [x] 3.3 Build passes: `npm run build`
+- [x] 3.1 Linting passes: `npm run lint` — 13c9f4b
+- [x] 3.2 Formatting is clean: `npm run format` leaves no diff — verified with `prettier --check` over every file this slice touched; repo-wide `npm run format` also reformats the pre-existing unformatted `context/course/m2-l5-…md`, which was reverted and left alone — 13c9f4b
+- [x] 3.3 Build passes: `npm run build` — 13c9f4b
 
 #### Manual
 
-- [x] 3.4 Signed in, `/` shows `New card` in the top bar and it opens the form
-- [x] 3.5 Signed out, `/` shows no `New card` link
-- [x] 3.6 `/cards/new` renders the top bar, and `Dashboard` / `Sign out` work from it
-- [x] 3.7 `roadmap.md` S-03 carries the `<Topbar />` requirement, and S-04 records the indirection
-- [x] 3.8 Full loop: sign in → add a card → `/review` → the new card is in the queue → rate it → it reschedules — card `loop-proof` created through the UI form, confirmed present in the 17-card `/review` queue, rated `missed_it`, rescheduled +1 day (state 0→2, reps 0→1). The rating was sent to `/api/cards/rate` directly rather than by clicking the button, because `ReviewSession` fails to hydrate on this dev server ("Failed to fetch dynamically imported module") — an S-02/S-03 component, unaffected by this slice, and green in `npm run build`
+- [x] 3.4 Signed in, `/` shows `New card` in the top bar and it opens the form — 13c9f4b
+- [x] 3.5 Signed out, `/` shows no `New card` link — 13c9f4b
+- [x] 3.6 `/cards/new` renders the top bar, and `Dashboard` / `Sign out` work from it — 13c9f4b
+- [x] 3.7 `roadmap.md` S-03 carries the `<Topbar />` requirement, and S-04 records the indirection — 13c9f4b
+- [x] 3.8 Full loop: sign in → add a card → `/review` → the new card is in the queue → rate it → it reschedules — card `loop-proof` created through the UI form, confirmed present in the 17-card `/review` queue, rated `missed_it`, rescheduled +1 day (state 0→2, reps 0→1). The rating was sent to `/api/cards/rate` directly rather than by clicking the button, because `ReviewSession` fails to hydrate on this dev server ("Failed to fetch dynamically imported module") — an S-02/S-03 component, unaffected by this slice, and green in `npm run build` — 13c9f4b
