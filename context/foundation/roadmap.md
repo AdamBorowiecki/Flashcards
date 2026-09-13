@@ -3,7 +3,7 @@ project: flashcards
 version: 1
 status: draft
 created: 2026-09-03
-updated: 2026-09-12
+updated: 2026-09-13
 prd_version: 1
 main_goal: low-complexity
 top_blocker: time
@@ -45,7 +45,7 @@ A solo language learner has hundreds of cards and no signal for which ones need 
 | S-01 | seed-deck-on-first-login        | sign in for the first time and find a starter deck already in the account | F-01          | FR-005                           | done     |
 | S-02 | srs-review-and-reschedule       | reveal a card's back, rate recall, and have the card rescheduled          | F-01, S-01    | US-01, FR-003, FR-004            | done     |
 | S-03 | review-queue-on-app-open        | open the app and land straight in the due queue, with the due count shown | S-02          | FR-002                           | proposed |
-| S-04 | create-own-flashcard            | create a flashcard with a front and a back                                | F-01          | FR-001                           | ready    |
+| S-04 | create-own-flashcard            | create a flashcard with a front and a back                                | F-01          | FR-001                           | done     |
 
 ## Baseline
 
@@ -132,7 +132,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:** —
 - **No migration needed:** `20260905163222_create_cards_table.sql` already carries `cards_insert_own`, `next_review_at timestamptz not null default now()`, and the blank front/back check constraints; `src/lib/srs.ts:71` already exports `emptySchedulingState()` for the initial scheduling columns. S-04 imports it and writes no SQL.
 - **Risk:** Depends only on F-01, so it shares no dependency with the review chain and can be run alongside any of it — the one place in this milestone where work can genuinely proceed on two fronts. Sequenced after the review chain rather than before it because the starter deck already removes the need to author cards in order to reach the loop. What could go wrong is a newly created card landing without a due timestamp and never surfacing.
-- **Status:** ready
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -177,3 +177,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-01: A learner signing in for the first time finds a built-in starter deck already in their account, so they can reach the review loop without authoring anything.** — Archived 2026-09-12 → `context/archive/2026-09-06-seed-deck-on-first-login/`. Lesson: —.
 - **F-01: (foundation) a card record persists with its front, its back, its owning learner, and the timestamp at which it next becomes due; a learner can read and write only their own cards, enforced at the database layer rather than in application code.** — Archived 2026-09-12 → `context/archive/2026-09-05-card-store-with-owner-isolation/`. Lesson: —.
 - **S-02: A learner sees a due card's front, reveals its back, rates their recall as missed it / got it / nailed it, and the card is rescheduled so that "missed it" returns sooner than "got it", which returns sooner than "nailed it".** — Archived 2026-09-12 → `context/archive/2026-09-06-srs-review-and-reschedule/`. Lesson: —.
+- **S-04: A learner enters a front and a back and the new card is saved to their deck, entering the review queue at the time the scheduler first sets for it.** — Archived 2026-09-13 → `context/archive/2026-09-12-create-own-flashcard/`. Lesson: —.
