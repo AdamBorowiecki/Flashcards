@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { isCardRating, schedule } from "@/lib/srs";
+import { SCHEDULING_STATE_COLUMNS, isCardRating, schedule } from "@/lib/srs";
 import type { CardSchedulingState } from "@/lib/srs";
 
 /**
@@ -18,8 +18,10 @@ import type { CardSchedulingState } from "@/lib/srs";
  *   500  { error }            Supabase failed, or is not configured
  */
 
-const SCHEDULING_COLUMNS =
-  "stability, difficulty, scheduled_days, learning_steps, reps, lapses, state, last_review, next_review_at";
+// Derived from the shared list in @/lib/srs rather than spelled out here, so the column set this
+// endpoint reads and the one api/cards/index.ts writes cannot drift apart. next_review_at rides
+// along because TypeConvert.card() needs the due date to rebuild the card.
+const SCHEDULING_COLUMNS = [...SCHEDULING_STATE_COLUMNS, "next_review_at"].join(", ");
 
 function json(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), {

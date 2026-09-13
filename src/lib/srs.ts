@@ -46,6 +46,29 @@ export interface CardSchedulingState {
   last_review: string | null;
 }
 
+/**
+ * The scheduling columns as they are named on the card row, in the order CardSchedulingState
+ * declares them.
+ *
+ * Two endpoints write these now -- api/cards/rate.ts reads them back, api/cards/index.ts writes
+ * them on creation -- so the list is shared knowledge rather than a literal each one keeps a copy
+ * of. scripts/verify-card-scheduling-columns.ts asserts emptySchedulingState() produces exactly
+ * this set, which is what stops the two from drifting apart silently.
+ *
+ * `next_review_at` is deliberately absent, for the same reason `due` is absent from the interface:
+ * it is the card's due date, not part of its scheduling state.
+ */
+export const SCHEDULING_STATE_COLUMNS = [
+  "stability",
+  "difficulty",
+  "scheduled_days",
+  "learning_steps",
+  "reps",
+  "lapses",
+  "state",
+  "last_review",
+] as const satisfies readonly (keyof CardSchedulingState)[];
+
 /** What a rating produces: the new scheduling state plus the new due date. */
 export interface ScheduledCard extends CardSchedulingState {
   next_review_at: string;

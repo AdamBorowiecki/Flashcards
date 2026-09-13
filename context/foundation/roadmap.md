@@ -109,6 +109,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **PRD refs:** FR-002
 - **Prerequisites:** S-02
 - **Parallel with:** S-04 — verified 2026-09-12 against the codebase, not just against the outcomes. Two contact points, both owned by S-04: `src/middleware.ts:4` (`PROTECTED_ROUTES`) and the navigation entry point. **S-03 merges second** and resolves any `PROTECTED_ROUTES` conflict in S-04's favour. S-03 may replace `src/pages/dashboard.astro` freely — S-04 is barred from it (see S-04 §Parallel with). Everything else is disjoint: S-03 alone touches `src/pages/index.astro`, `src/pages/api/auth/signin.ts:20`, `src/pages/review.astro`, `src/components/review/*`.
+- **Binding requirement from S-04 (recorded 2026-09-13):** whatever replaces `src/pages/index.astro` and `src/pages/dashboard.astro` **must render `<Topbar />` for signed-in learners.** S-04's only entry point — the "New card" link — lives in `src/components/Topbar.astro`, whose sole render site before S-04 is `Welcome.astro` → `index.astro`. Dropping `<Topbar />` makes card creation unreachable, with no git conflict and no failing test: exactly the failure `lessons.md` §"Parallel slices need declared file ownership" describes. S-04 also renders it on `src/pages/cards/new.astro`, so the page is self-contained once reached; this requirement is about how a learner reaches it at all.
 - **Blockers:** —
 - **Unknowns:**
   - What a learner with nothing due should see on open. Owner: user. Block: no.
@@ -124,6 +125,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Prerequisites:** F-01
 - **Parallel with:** S-01, S-02, S-03 — for S-03 this is verified against the codebase (2026-09-12) and carries three binding constraints:
   - **S-04 must not touch `src/pages/dashboard.astro`.** Its "Start review" link is marked interim in the source and S-03 owns replacing the page. A create-card link placed there would vanish at merge with no git conflict — the silent failure named in `lessons.md` §"Parallel slices need declared file ownership". Hang the entry point on `src/components/Topbar.astro`, which is outside S-03's scope.
+    - **The indirection this constraint does not cover, recorded 2026-09-13 while implementing S-04.** `Topbar.astro` is safe from S-03, but before S-04 it renders in exactly one place — `src/components/Welcome.astro:28`, reached only from `src/pages/index.astro`, which **is** on S-03's file list. The component surviving is therefore not the same as the link surviving. S-04 mitigates from its own side by rendering `<Topbar />` on `src/pages/cards/new.astro`; the requirement on S-03 is written into the S-03 item above.
   - **S-04 owns `src/middleware.ts`** — it is the slice that adds a protected route. S-03 merges second and yields on `PROTECTED_ROUTES`.
   - **S-04 merges first.**
 - **Blockers:** —

@@ -18,6 +18,12 @@ jobs:
       - run: npm ci
       - run: npx astro sync
       - run: npm run lint
+      # Both scripts run under plain node and touch neither a network nor a database, so they need
+      # no secrets. Without these steps the invariants they encode -- the rating ordering the PRD
+      # calls non-negotiable, and the scheduling-column contract a created card depends on -- are
+      # only checked when someone remembers to check them.
+      - run: npm run verify:srs
+      - run: npm run verify:cards
       - run: npm run build
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
