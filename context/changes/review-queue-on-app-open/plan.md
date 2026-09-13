@@ -267,15 +267,15 @@ Declared per `lessons.md` §"Parallel slices need declared file ownership, not j
 
 #### Automated
 
-- [x] 2.1 Routing matrix passes: `npm run verify:routing`
-- [x] 2.2 SRS ordering still passes: `npm run verify:srs`
-- [x] 2.3 Linting and type checking pass: `npx astro sync && npm run lint`
-- [x] 2.4 Production build succeeds: `npm run build`
+- [x] 2.1 Routing matrix passes: `npm run verify:routing` — 3fdacb7
+- [x] 2.2 SRS ordering still passes: `npm run verify:srs` — 3fdacb7
+- [x] 2.3 Linting and type checking pass: `npx astro sync && npm run lint` — 3fdacb7
+- [x] 2.4 Production build succeeds: `npm run build` — 3fdacb7
 
 #### Manual
 
-- [x] 2.5 Sign-in lands directly on `/review` with the queue and header
-- [x] 2.6 `/` redirects to `/review` when signed in, shows marketing when signed out
-- [x] 2.7 Topbar's Dashboard link lands on `/review`
-- [x] 2.8 Learner with nothing due reaches the panel on app open and can sign out
-- [x] 2.9 Signed out, `/review` and `/dashboard` both redirect to `/auth/signin`
+- [x] 2.5 Sign-in lands directly on `/review` with the queue and header — 3fdacb7
+- [x] 2.6 `/` redirects to `/review` when signed in, shows marketing when signed out — 3fdacb7
+- [x] 2.7 Topbar's Dashboard link lands on `/review` — 3fdacb7
+- [x] 2.8 Learner with nothing due reaches the panel on app open and can sign out — 3fdacb7
+- [x] 2.9 Signed out, `/review` and `/dashboard` both redirect to `/auth/signin` — 3fdacb7

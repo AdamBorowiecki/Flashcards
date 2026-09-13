@@ -1,7 +1,7 @@
 ---
 change_id: review-queue-on-app-open
 title: Review queue on app open
-status: implementing
+status: implemented
 created: 2026-09-12
 updated: 2026-09-13
 archived_at: null
