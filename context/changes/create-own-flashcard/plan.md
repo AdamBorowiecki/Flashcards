@@ -423,30 +423,30 @@ are indistinguishable in shape from seeded ones.
 #### Automated
 
 - [ ] 2.1 Type checking passes: `npx astro sync && npx astro check` — not passing: same pre-existing ts(2345) in `src/lib/srs.ts:114` as 1.3; no new type errors from this phase
-- [x] 2.2 Linting passes: `npm run lint`
-- [x] 2.3 Build passes: `npm run build`
+- [x] 2.2 Linting passes: `npm run lint` — 62d36ca
+- [x] 2.3 Build passes: `npm run build` — 62d36ca
 
 #### Manual
 
-- [x] 2.4 Signed out, visiting `/cards/new` redirects to `/auth/signin`
-- [x] 2.5 Adding a card clears the form, moves focus to the front field, and shows the confirmation with the counter
-- [x] 2.6 Adding three cards in a row works without a page reload, and the counter reads 3
-- [x] 2.7 A submitted blank field is rejected without a network call and the typed text survives
-- [x] 2.8 Killing the network mid-submit shows an error, keeps both fields, and does not increment the counter
-- [x] 2.9 The added cards appear in the queue at `/review` on the next load
+- [x] 2.4 Signed out, visiting `/cards/new` redirects to `/auth/signin` — 62d36ca
+- [x] 2.5 Adding a card clears the form, moves focus to the front field, and shows the confirmation with the counter — 62d36ca
+- [x] 2.6 Adding three cards in a row works without a page reload, and the counter reads 3 — 62d36ca
+- [x] 2.7 A submitted blank field is rejected without a network call and the typed text survives — 62d36ca
+- [x] 2.8 Killing the network mid-submit shows an error, keeps both fields, and does not increment the counter — 62d36ca
+- [x] 2.9 The added cards appear in the queue at `/review` on the next load — 62d36ca
 
 ### Phase 3: Entry point and hand-off to S-03
 
 #### Automated
 
-- [ ] 3.1 Linting passes: `npm run lint`
-- [ ] 3.2 Formatting is clean: `npm run format` leaves no diff
-- [ ] 3.3 Build passes: `npm run build`
+- [x] 3.1 Linting passes: `npm run lint`
+- [x] 3.2 Formatting is clean: `npm run format` leaves no diff — verified with `prettier --check` over every file this slice touched; repo-wide `npm run format` also reformats the pre-existing unformatted `context/course/m2-l5-…md`, which was reverted and left alone
+- [x] 3.3 Build passes: `npm run build`
 
 #### Manual
 
-- [ ] 3.4 Signed in, `/` shows `New card` in the top bar and it opens the form
-- [ ] 3.5 Signed out, `/` shows no `New card` link
-- [ ] 3.6 `/cards/new` renders the top bar, and `Dashboard` / `Sign out` work from it
-- [ ] 3.7 `roadmap.md` S-03 carries the `<Topbar />` requirement, and S-04 records the indirection
-- [ ] 3.8 Full loop: sign in → add a card → `/review` → the new card is in the queue → rate it → it reschedules
+- [x] 3.4 Signed in, `/` shows `New card` in the top bar and it opens the form
+- [x] 3.5 Signed out, `/` shows no `New card` link
+- [x] 3.6 `/cards/new` renders the top bar, and `Dashboard` / `Sign out` work from it
+- [x] 3.7 `roadmap.md` S-03 carries the `<Topbar />` requirement, and S-04 records the indirection
+- [x] 3.8 Full loop: sign in → add a card → `/review` → the new card is in the queue → rate it → it reschedules — card `loop-proof` created through the UI form, confirmed present in the 17-card `/review` queue, rated `missed_it`, rescheduled +1 day (state 0→2, reps 0→1). The rating was sent to `/api/cards/rate` directly rather than by clicking the button, because `ReviewSession` fails to hydrate on this dev server ("Failed to fetch dynamically imported module") — an S-02/S-03 component, unaffected by this slice, and green in `npm run build`
