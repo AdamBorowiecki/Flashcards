@@ -252,30 +252,30 @@ Declared per `lessons.md` §"Parallel slices need declared file ownership, not j
 
 #### Automated
 
-- [x] 1.1 Linting and type checking pass: `npx astro sync && npm run lint`
-- [x] 1.2 Formatting is clean: `npm run format`
-- [x] 1.3 Production build succeeds: `npm run build`
+- [x] 1.1 Linting and type checking pass: `npx astro sync && npm run lint` — 653fb58
+- [x] 1.2 Formatting is clean: `npm run format` — 653fb58
+- [x] 1.3 Production build succeeds: `npm run build` — 653fb58
 
 #### Manual
 
-- [x] 1.4 Header reads `Card 1 of N` matching the due count, and advances after one rating
-- [x] 1.5 Exhausted state shows only the "nothing due" panel, no out-of-range counter
-- [x] 1.6 Topbar renders on `/review` with the learner's email and a working Sign out
-- [x] 1.7 Empty queue on arrival shows the linkless panel with sign-out reachable
+- [x] 1.4 Header reads `Card 1 of N` matching the due count, and advances after one rating — 653fb58
+- [x] 1.5 Exhausted state shows only the "nothing due" panel, no out-of-range counter — 653fb58
+- [x] 1.6 Topbar renders on `/review` with the learner's email and a working Sign out — 653fb58
+- [x] 1.7 Empty queue on arrival shows the linkless panel with sign-out reachable — 653fb58
 
 ### Phase 2: Entry Routing
 
 #### Automated
 
-- [ ] 2.1 Routing matrix passes: `npm run verify:routing`
-- [ ] 2.2 SRS ordering still passes: `npm run verify:srs`
-- [ ] 2.3 Linting and type checking pass: `npx astro sync && npm run lint`
-- [ ] 2.4 Production build succeeds: `npm run build`
+- [x] 2.1 Routing matrix passes: `npm run verify:routing`
+- [x] 2.2 SRS ordering still passes: `npm run verify:srs`
+- [x] 2.3 Linting and type checking pass: `npx astro sync && npm run lint`
+- [x] 2.4 Production build succeeds: `npm run build`
 
 #### Manual
 
-- [ ] 2.5 Sign-in lands directly on `/review` with the queue and header
-- [ ] 2.6 `/` redirects to `/review` when signed in, shows marketing when signed out
-- [ ] 2.7 Topbar's Dashboard link lands on `/review`
-- [ ] 2.8 Learner with nothing due reaches the panel on app open and can sign out
-- [ ] 2.9 Signed out, `/review` and `/dashboard` both redirect to `/auth/signin`
+- [x] 2.5 Sign-in lands directly on `/review` with the queue and header
+- [x] 2.6 `/` redirects to `/review` when signed in, shows marketing when signed out
+- [x] 2.7 Topbar's Dashboard link lands on `/review`
+- [x] 2.8 Learner with nothing due reaches the panel on app open and can sign out
+- [x] 2.9 Signed out, `/review` and `/dashboard` both redirect to `/auth/signin`

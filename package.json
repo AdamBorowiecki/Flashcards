@@ -11,7 +11,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "verify:srs": "node --experimental-strip-types scripts/verify-srs-ordering.ts",
-    "verify:cards": "node --experimental-strip-types scripts/verify-card-scheduling-columns.ts"
+    "verify:cards": "node --experimental-strip-types scripts/verify-card-scheduling-columns.ts",
+    "verify:routing": "node --experimental-strip-types scripts/verify-entry-routing.ts"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.8",

@@ -65,6 +65,15 @@ const astroConfig = tseslint.config({
     "astro/no-set-html-directive": "error",
     "astro/no-unused-css-selector": "warn",
     "astro/prefer-class-list-directive": "warn",
+    // Off for .astro only: the rule CRASHES on any `return` in a frontmatter block --
+    // "Non-null Assertion Failed: Expected node to have a parent", because astro-eslint-parser
+    // does not wrap frontmatter in a function node and checkReturnStatement demands one. It is a
+    // rule/parser incompatibility, not a violation, so no code shape avoids it and an inline
+    // eslint-disable cannot either (disable comments filter reports after the rule has already run).
+    // Page-level redirects -- src/pages/index.astro, src/pages/dashboard.astro -- need that return.
+    // Scoped to .astro so .ts/.tsx keep the rule, and no-floating-promises still guards a dropped
+    // await in frontmatter queries everywhere.
+    "@typescript-eslint/no-misused-promises": "off",
   },
 });
 
