@@ -21,6 +21,12 @@
  * verify-srs-ordering.ts, this script never touches a database or a network -- which is also why it
  * may import only from src/lib/srs.ts, the one module that resolves under plain node.
  *
+ * It also does NOT catch drift against the SCHEMA. This proves the tuple and the factory agree with
+ * each other; neither is tied to public.cards. A ninth column added to the interface, the tuple and
+ * emptySchedulingState() but not to a migration passes this check and astro check alike, and fails
+ * first in production as a PostgREST error surfacing at api/cards/index.ts as a 500. Closing that
+ * would take an information_schema assertion in supabase/tests/, which needs a live database.
+ *
  * Exits non-zero on the first failed assertion.
  */
 import { SCHEDULING_STATE_COLUMNS, emptySchedulingState } from "../src/lib/srs.ts";

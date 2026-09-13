@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { emptySchedulingState } from "@/lib/srs";
+import { validateSide } from "@/lib/cards";
 
 /**
  * Create one card for the signed-in learner (roadmap S-04, PRD FR-001).
@@ -10,6 +11,7 @@ import { emptySchedulingState } from "@/lib/srs";
  *   201  { id, front, next_review_at }   card saved
  *   400  { error }                       body not JSON, not an object, or a side is blank / too long
  *   401  { error }                       no session
+ *   413  { error }                       body larger than MAX_BODY_BYTES
  *   500  { error }                       Supabase failed, or is not configured
  *
  * The 201 body comes from the inserted row, not from the request. A confirmation built out of what
@@ -18,37 +20,23 @@ import { emptySchedulingState } from "@/lib/srs";
  */
 
 /**
- * Application-only cap. The database enforces non-blank (cards_front_not_blank /
- * cards_back_not_blank) and nothing else -- roadmap S-04 rules out a migration for this slice, so a
- * row inserted by any other means bypasses this limit. It exists to stop a pasted wall of text from
- * breaking the review panel's layout, not as a data-integrity guarantee.
+ * Body-size ceiling, enforced before the body is parsed.
+ *
+ * MAX_SIDE_LENGTH bounds what reaches the database and the review panel's layout; it does nothing
+ * for the runtime, because request.json() has already materialised and parsed the whole payload by
+ * the time any field is measured. Two 500-character sides are under 2 KB even in multi-byte text,
+ * so this ceiling is generous for every honest caller while keeping one signed-in account from
+ * spending the Worker's memory and CPU budget on a payload that was always going to be rejected.
+ *
+ * A chunked request carries no content-length, so this is a cheap filter rather than a hard bound.
  */
-const MAX_SIDE_LENGTH = 500;
+const MAX_BODY_BYTES = 16 * 1024;
 
 function json(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: { "Content-Type": "application/json" },
   });
-}
-
-/** Trim first, then judge: " " is blank, and a side that only fits under the cap once trimmed passes. */
-function readSide(value: unknown, label: string): { text: string } | { error: string } {
-  if (typeof value !== "string") {
-    return { error: `${label} is required` };
-  }
-
-  const text = value.trim();
-
-  if (text === "") {
-    return { error: `${label} cannot be blank` };
-  }
-
-  if (text.length > MAX_SIDE_LENGTH) {
-    return { error: `${label} must be ${MAX_SIDE_LENGTH} characters or fewer` };
-  }
-
-  return { text };
 }
 
 export const POST: APIRoute = async (context) => {
@@ -65,6 +53,11 @@ export const POST: APIRoute = async (context) => {
     return json({ error: "Not signed in" }, 401);
   }
 
+  const declaredLength = Number(context.request.headers.get("content-length"));
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_BODY_BYTES) {
+    return json({ error: "Body is too large" }, 413);
+  }
+
   let body: unknown;
   try {
     body = await context.request.json();
@@ -78,12 +71,12 @@ export const POST: APIRoute = async (context) => {
 
   const { front: rawFront, back: rawBack } = body as Record<string, unknown>;
 
-  const front = readSide(rawFront, "front");
+  const front = validateSide(rawFront, "Front");
   if ("error" in front) {
     return json({ error: front.error }, 400);
   }
 
-  const back = readSide(rawBack, "back");
+  const back = validateSide(rawBack, "Back");
   if ("error" in back) {
     return json({ error: back.error }, 400);
   }

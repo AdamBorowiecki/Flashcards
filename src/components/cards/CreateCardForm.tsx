@@ -3,10 +3,7 @@ import { Plus, CheckCheck, Type, Languages } from "lucide-react";
 import { FormField } from "@/components/auth/FormField";
 import { ServerError } from "@/components/auth/ServerError";
 import { Button } from "@/components/ui/button";
-
-/** Mirrors MAX_SIDE_LENGTH in src/pages/api/cards/index.ts. The server stays the authority; this
- * copy only saves a round-trip for a mistake the learner can see immediately. */
-const MAX_SIDE_LENGTH = 500;
+import { validateSide } from "@/lib/cards";
 
 const FRONT_FIELD_ID = "front";
 
@@ -36,17 +33,20 @@ export default function CreateCardForm() {
   const [lastSaved, setLastSaved] = useState<CreatedCard | null>(null);
   const [savedCount, setSavedCount] = useState(0);
 
-  function validateSide(value: string, label: string): string | undefined {
-    const text = value.trim();
-    if (text === "") return `${label} cannot be blank`;
-    if (text.length > MAX_SIDE_LENGTH) return `${label} must be ${MAX_SIDE_LENGTH} characters or fewer`;
-    return undefined;
+  /**
+   * The same rule the endpoint applies, from the same module -- not a copy of it. This runs only to
+   * save a round-trip on a mistake the learner can see immediately; the server re-validates the
+   * untrimmed strings it is sent and stays the authority.
+   */
+  function sideError(value: string, label: string): string | undefined {
+    const result = validateSide(value, label);
+    return "error" in result ? result.error : undefined;
   }
 
   function validate() {
     const next: typeof errors = {
-      front: validateSide(front, "Front"),
-      back: validateSide(back, "Back"),
+      front: sideError(front, "Front"),
+      back: sideError(back, "Back"),
     };
 
     setErrors(next);
