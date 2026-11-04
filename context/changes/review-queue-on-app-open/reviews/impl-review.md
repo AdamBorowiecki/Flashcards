@@ -7,6 +7,7 @@
 - **Date**: 2026-11-04
 - **Verdict**: NEEDS ATTENTION
 - **Findings**: 0 critical, 4 warnings, 5 observations
+- **Triage**: F1, F2 FIXED. F3–F9 PENDING.
 
 > Every warning sits in the verification script or the lint config. The shipped
 > application code matched the plan on all eight planned changes, respected all
@@ -90,7 +91,11 @@ headline behavior would have been silently dead.
   - Confidence: HIGH — the identical hard-fail pattern is nine lines below, in
     the same file, for the same reason.
   - Blind spot: None significant.
-- **Decision**: PENDING
+- **Decision**: FIXED — `??` default dropped; `BASE_URL` now hard-fails when
+  unset, next to the credentials guard, under one shared comment covering both.
+  The docblock at `:13-16` was reworded to match. Verified: with `BASE_URL`
+  unset the script exits 1 with
+  `BASE_URL must be set -- a default would risk verifying another worktree's dev server`.
 
 ### F2 — No `fetch` failure handling; the most likely failure mode crashes raw
 
@@ -113,7 +118,12 @@ headline behavior would have been silently dead.
   - Confidence: HIGH — `fail()` already exists at `:52-55` and takes exactly the
     needed shape.
   - Blind spot: None significant.
-- **Decision**: PENDING
+- **Decision**: FIXED — added a `request(url, init, label)` helper that wraps
+  `fetch` in try/catch and routes the rejection through `fail()` with `BASE_URL`
+  in the message; both call sites now use it. Verified against a dead port: the
+  script reports
+  `request failed (fetch failed) -- is \`astro dev\` serving http://localhost:49999?`
+  and exits 1, where it previously died on an unhandled `TypeError`.
 
 ### F3 — Unplanned `eslint.config.js` change, necessary but unrecorded
 
