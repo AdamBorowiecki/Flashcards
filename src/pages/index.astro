@@ -1,6 +1,17 @@
 ---
 import Welcome from "@/components/Welcome.astro";
 import Layout from "@/layouts/Layout.astro";
+
+// "App open" means the due queue for a signed-in learner however they arrive -- bookmark, typed URL,
+// browser restore -- not only in the moment right after sign-in, which api/auth/signin.ts covers on
+// its own. Before this branch existed, a signed-in learner opening / landed on the marketing page
+// with no link onward and had to type /dashboard by hand.
+//
+// Anonymous visitors keep the marketing page, which is why / stays OUT of PROTECTED_ROUTES
+// (src/middleware.ts:4) and must not be added to it.
+if (Astro.locals.user) {
+  return Astro.redirect("/review");
+}
 ---
 
 <Layout>

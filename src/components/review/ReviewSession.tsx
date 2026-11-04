@@ -80,6 +80,19 @@ export default function ReviewSession({ queue }: Props) {
 
   return (
     <div className="space-y-4">
+      {/*
+       * The due count, as a session header rather than a list to browse (FR-002's own resolution).
+       * Both numbers come from the snapshot review.astro fetched at page load: the denominator cannot
+       * grow mid-session, because enable_short_term: false (src/lib/srs.ts:68) means even a card rated
+       * missed_it comes back tomorrow, not later today. That is what makes a fixed total honest here.
+       *
+       * Sits below the index >= queue.length early return above, so the exhausted state renders
+       * EmptyQueue alone instead of "Card 13 of 12".
+       */}
+      <p className="text-center text-sm text-blue-100/60">
+        Card {index + 1} of {queue.length}
+      </p>
+
       <div className="rounded-xl border border-white/10 bg-white/5 p-6 text-center">
         <p className="text-xs tracking-wide text-blue-100/50 uppercase">Front</p>
         <p className="mt-1 text-2xl font-semibold text-white">{card.front}</p>

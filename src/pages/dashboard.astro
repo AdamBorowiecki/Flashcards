@@ -1,57 +1,11 @@
 ---
-import Layout from "@/layouts/Layout.astro";
-
-const { user, supabase } = Astro.locals;
-
-// Three reachable states: a count, a failed query, or no client at all.
-// A failed query must not render as 0 — "we could not ask" is not "you have no cards".
-let deckSize: number | null = null;
-let deckUnavailable = false;
-
-if (supabase) {
-  // No user_id predicate here on purpose: cards_select_own scopes the read.
-  const { count, error } = await supabase.from("cards").select("*", { count: "exact", head: true });
-  if (error) {
-    deckUnavailable = true;
-  } else {
-    deckSize = count ?? 0;
-  }
-}
+// This route exists only to keep an existing link working, and deliberately renders nothing.
+//
+// It replaced an interim hub page that counted the deck and linked to /review. FR-002's resolution
+// ruled out a separate view to browse, so the page is gone -- but the route is not, because
+// Topbar.astro:13 links to /dashboard and that file belongs to S-04 (create-own-flashcard). This
+// slice may not edit it, so deleting the route would 404 a link it cannot fix.
+//
+// Once S-04 has merged and its Topbar no longer points here, this file can go.
+return Astro.redirect("/review");
 ---
-
-<Layout title="Dashboard">
-  <div class="bg-cosmic flex min-h-screen items-center justify-center p-4">
-    <div class="rounded-2xl border border-white/10 bg-white/10 p-8 text-center text-white backdrop-blur-xl">
-      <h1 class="mb-4 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
-        Dashboard
-      </h1>
-      <p class="text-blue-100/80">
-        Welcome, <span class="font-semibold text-white">{user?.email}</span>
-      </p>
-      {
-        deckSize !== null && (
-          <p class="mt-2 text-blue-100/80">
-            Your deck: <span class="font-semibold text-white">{deckSize}</span> {deckSize === 1 ? "card" : "cards"}
-          </p>
-        )
-      }
-      {deckUnavailable && <p class="mt-2 text-blue-100/60">Your deck size is unavailable right now.</p>}
-      {/* Interim entry point. S-03 routes the learner into the queue on open and will replace this. */}
-      <a
-        href="/review"
-        class="mt-6 inline-block rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
-      >
-        Start review
-      </a>
-      <p class="mt-2 text-sm text-blue-100/50">This page is only for authenticated users.</p>
-      <form method="POST" action="/api/auth/signout" class="mt-6">
-        <button
-          type="submit"
-          class="rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
-        >
-          Sign out
-        </button>
-      </form>
-    </div>
-  </div>
-</Layout>
