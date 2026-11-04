@@ -35,7 +35,29 @@ npm run dev        # Astro dev server (Cloudflare workerd)
 npm run lint       # ESLint with type-checked rules — run before committing
 npm run lint:fix   # Auto-fix lint errors
 npm run format     # Prettier (Astro + Tailwind plugins)
+npm test           # Unit tests (node:test) — run before committing
+npm run test:watch # Same suite, re-run on change
 ```
+
+## Testing
+
+Unit tests live in `tests/*.test.ts` and run on the **built-in `node:test`** runner under
+`--experimental-strip-types`. There is no Vitest or Jest, and no test-runner dependency at all —
+the same constraint the `scripts/verify-*.ts` checks already live under.
+
+What that buys and costs:
+
+- Tests import with **relative paths and an explicit `.ts` extension** (`../src/lib/srs.ts`), never
+  the `@/` alias. Plain `node` resolves neither the alias nor `astro:env`.
+- So a module is unit-testable here only if it imports nothing Astro-shaped. `src/lib/srs.ts` says
+  as much in its own header; `src/lib/config-status.ts` imports `astro:env/server` and is therefore
+  out of reach without a runner that understands Astro.
+- **React components and `.astro` pages are not covered.** Testing those needs Vitest plus jsdom and
+  testing-library. Don't half-add it — decide the runner deliberately if that becomes the goal.
+- Routing and redirect behavior is covered by `scripts/verify-entry-routing.ts`, not by unit tests;
+  it needs a running dev server and a test account.
+
+`npm test` runs in CI before `verify:srs` and `verify:cards`. A failing test exits non-zero.
 
 CI runs `astro sync` before `lint`. If type errors appear locally, run `npx astro sync` first.
 

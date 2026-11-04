@@ -34,6 +34,22 @@ const baseConfig = tseslint.config({
     ],
     "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],
     "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: { attributes: false } }],
+    // node:test's describe/it return promises the runner itself awaits, so every call in tests/
+    // reads as a floating promise. allowForKnownSafeCalls is typescript-eslint's purpose-built
+    // answer: it exempts these specific imports by name and origin, rather than switching the rule
+    // off for tests/ -- which would also stop catching a genuinely dropped await inside a test body.
+    "@typescript-eslint/no-floating-promises": [
+      "error",
+      {
+        allowForKnownSafeCalls: [
+          {
+            from: "package",
+            package: "node:test",
+            name: ["after", "afterEach", "before", "beforeEach", "describe", "it", "suite", "test"],
+          },
+        ],
+      },
+    ],
   },
 });
 

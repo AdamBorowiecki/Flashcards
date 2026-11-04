@@ -10,6 +10,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
+    "test": "node --experimental-strip-types --test \"tests/**/*.test.ts\"",
+    "test:watch": "node --experimental-strip-types --test --watch \"tests/**/*.test.ts\"",
     "verify:srs": "node --experimental-strip-types scripts/verify-srs-ordering.ts",
     "verify:cards": "node --experimental-strip-types scripts/verify-card-scheduling-columns.ts"
   },
